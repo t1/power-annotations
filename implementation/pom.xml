@@ -6,11 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.t1</groupId>
-        <artifactId>annotations</artifactId>
+        <artifactId>power-annotations-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>annotations-implementation</artifactId>
+    <artifactId>power-annotations-implementation</artifactId>
 
     <build>
         <plugins>
@@ -42,7 +42,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.t1</groupId>
-            <artifactId>annotations-api</artifactId>
+            <artifactId>power-annotations-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

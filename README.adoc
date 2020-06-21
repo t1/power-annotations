@@ -1,6 +1,6 @@
-= Annotations Magic
+= Power-Annotations
 
-Instead of something like `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.onClass(SuperHero.class).get(Entity.class)` and you'll get some very powerful features:
+Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features:
 
 == Implemented Features
 
