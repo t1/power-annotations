@@ -2,7 +2,7 @@ package test.plain;
 
 import com.github.t1.annotations.Annotations;
 import org.junit.jupiter.api.Test;
-import test.jandexed.DummyAnnotation;
+import test.jandexed.SomeAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -18,57 +18,57 @@ import static org.assertj.core.api.BDDAssertions.then;
 public class ReflectionBehavior {
 
     @Test void shouldGetSingleClassAnnotation() {
-        Optional<DummyAnnotation> annotation = Annotations.on(ReflectionDummyClass.class).get(DummyAnnotation.class);
+        Optional<SomeAnnotation> annotation = Annotations.on(SomeReflectionClass.class).get(SomeAnnotation.class);
 
         assert annotation.isPresent();
-        DummyAnnotation dummyAnnotation = annotation.get();
-        then(dummyAnnotation.annotationType()).isEqualTo(DummyAnnotation.class);
-        then(dummyAnnotation.value()).isEqualTo("reflection-dummy-class");
-        then(dummyAnnotation).isSameAs(ReflectionDummyClass.class.getAnnotation(DummyAnnotation.class));
+        SomeAnnotation someAnnotation = annotation.get();
+        then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);
+        then(someAnnotation.value()).isEqualTo("some-reflection-class");
+        then(someAnnotation).isSameAs(SomeReflectionClass.class.getAnnotation(SomeAnnotation.class));
     }
 
     @Test void shouldGetAllClassAnnotations() {
-        List<Annotation> annotations = Annotations.on(ReflectionDummyClass.class).all();
+        List<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
         then(annotations).hasSize(1);
-        then(annotations.get(0).annotationType()).isEqualTo(DummyAnnotation.class);
-        DummyAnnotation dummyAnnotation = (DummyAnnotation) annotations.get(0);
-        then(dummyAnnotation.value()).isEqualTo("reflection-dummy-class");
+        then(annotations.get(0).annotationType()).isEqualTo(SomeAnnotation.class);
+        SomeAnnotation someAnnotation = (SomeAnnotation) annotations.get(0);
+        then(someAnnotation.value()).isEqualTo("some-reflection-class");
     }
 
     @Test void shouldGetSingleFieldAnnotation() {
-        Annotations fieldAnnotations = Annotations.onField(ReflectionDummyClass.class, "bar");
+        Annotations fieldAnnotations = Annotations.onField(SomeReflectionClass.class, "bar");
 
-        Optional<DummyAnnotation> annotation = fieldAnnotations.get(DummyAnnotation.class);
+        Optional<SomeAnnotation> annotation = fieldAnnotations.get(SomeAnnotation.class);
 
         assert annotation.isPresent();
-        DummyAnnotation dummyAnnotation = annotation.get();
-        then(dummyAnnotation.annotationType()).isEqualTo(DummyAnnotation.class);
-        then(dummyAnnotation.value()).isEqualTo("reflection-dummy-field");
+        SomeAnnotation someAnnotation = annotation.get();
+        then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);
+        then(someAnnotation.value()).isEqualTo("some-reflection-field");
     }
 
     @Test void shouldFailToGetUnknownFieldAnnotation() {
-        Throwable throwable = catchThrowable(() -> Annotations.onField(ReflectionDummyClass.class, "unknown"));
+        Throwable throwable = catchThrowable(() -> Annotations.onField(SomeReflectionClass.class, "unknown"));
 
         then(throwable).isInstanceOf(RuntimeException.class)
-            .hasMessage("no field 'unknown' in " + ReflectionDummyClass.class);
+            .hasMessage("no field 'unknown' in " + SomeReflectionClass.class);
     }
 
     @Test void shouldGetSingleMethodAnnotation() {
-        Annotations methodAnnotations = Annotations.onMethod(ReflectionDummyClass.class, "foo", String.class);
+        Annotations methodAnnotations = Annotations.onMethod(SomeReflectionClass.class, "foo", String.class);
 
-        Optional<DummyAnnotation> annotation = methodAnnotations.get(DummyAnnotation.class);
+        Optional<SomeAnnotation> annotation = methodAnnotations.get(SomeAnnotation.class);
 
         assert annotation.isPresent();
-        DummyAnnotation dummyAnnotation = annotation.get();
-        then(dummyAnnotation.annotationType()).isEqualTo(DummyAnnotation.class);
-        then(dummyAnnotation.value()).isEqualTo("reflection-dummy-method");
+        SomeAnnotation someAnnotation = annotation.get();
+        then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);
+        then(someAnnotation.value()).isEqualTo("some-reflection-method");
     }
 
     @Test void shouldFailToGetUnknownMethodAnnotation() {
-        Throwable throwable = catchThrowable(() -> Annotations.onMethod(ReflectionDummyClass.class, "unknown", String.class));
+        Throwable throwable = catchThrowable(() -> Annotations.onMethod(SomeReflectionClass.class, "unknown", String.class));
 
         then(throwable).isInstanceOf(RuntimeException.class)
-            .hasMessage("no method unknown(String) in " + ReflectionDummyClass.class);
+            .hasMessage("no method unknown(String) in " + SomeReflectionClass.class);
     }
 }

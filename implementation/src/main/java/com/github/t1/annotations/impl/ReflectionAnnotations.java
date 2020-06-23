@@ -9,6 +9,11 @@ import java.util.Optional;
 
 import static java.util.Arrays.asList;
 
+/**
+ * {@link Annotations} collected via JDK reflection. Directly returns the 'real'
+ * annotation instances, not {@link AnnotationProxy proxies} and {@link AbstractAnnotation}s,
+ * to keep the overhead minimal.
+ */
 class ReflectionAnnotations implements Annotations {
     public static Annotations on(Class<?> type) {
         return new ReflectionAnnotations(type);

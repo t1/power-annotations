@@ -1,10 +1,13 @@
 = Power-Annotations
 
-Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features:
+Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features described below. This works also for fields and methods; simply use `Annotations.onField` or `Annotations.onMethod`.
 
 == Implemented Features
 
-* If there is a https://github.com/wildfly/jandex[Jandex] index file, the annotations will be read from there.
+=== Jandex
+
+If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. Java reflection will only be used as a fallback if a class is not in the index.
+
 
 == Planned Features
 
