@@ -13,6 +13,7 @@
     <modules>
         <module>api</module>
         <module>implementation</module>
+        <module>tck</module>
     </modules>
 
     <properties>

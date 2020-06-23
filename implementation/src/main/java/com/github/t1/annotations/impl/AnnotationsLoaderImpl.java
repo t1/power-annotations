@@ -32,7 +32,7 @@ class AnnotationsLoaderImpl extends AnnotationsLoader {
 
     public AnnotationsLoaderImpl(String indexResource) {
         try (InputStream inputStream = getClassLoader().getResourceAsStream(indexResource)) {
-            this.index = new IndexReader(inputStream).read();
+            this.index = (inputStream == null) ? null : new IndexReader(inputStream).read();
         } catch (RuntimeException | IOException e) {
             throw new RuntimeException("can't read " + indexResource, e);
         }
@@ -101,6 +101,8 @@ class AnnotationsLoaderImpl extends AnnotationsLoader {
     }
 
     private ClassInfo info(Class<?> type) {
+        if (index == null)
+            return null;
         DotName name = DotName.createSimple(type.getName());
         return index.getClassByName(name);
     }

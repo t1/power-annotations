@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import test.plain.SomeReflectionClass;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.Optional;
 
@@ -21,12 +20,10 @@ public class JandexBehavior {
     AnnotationsLoaderImpl loader = buildAnnotationsLoader();
 
     @Nested class FailingLoad {
-        @Test void shouldFailToLoadUnknownIndexResource() {
-            Throwable throwable = catchThrowable(() -> new AnnotationsLoaderImpl("unknown-index-file"));
+        @Test void shouldNotLoadUnknownIndexResource() {
+            AnnotationsLoaderImpl loader = new AnnotationsLoaderImpl("unknown-index-file");
 
-            then(throwable).isInstanceOf(RuntimeException.class)
-                .hasMessage("can't read unknown-index-file")
-                .hasCauseInstanceOf(IOException.class);
+            then(loader).isNotNull();
         }
 
         @Test void shouldFailToLoadInvalidIndexInputStream() throws Exception {
