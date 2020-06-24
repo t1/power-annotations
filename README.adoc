@@ -8,6 +8,8 @@ Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(Su
 
 If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. Java reflection will only be used as a fallback if a class is not in the index.
 
+This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection.
+
 
 == Planned Features
 

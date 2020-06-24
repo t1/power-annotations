@@ -11,19 +11,19 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 class JandexAnnotations implements Annotations {
+
     private final List<Annotation> annotations;
 
     public JandexAnnotations(Collection<AnnotationInstance> annotations) {
-        this.annotations = annotations.stream().map(this::convert).collect(toList());
+        this.annotations = annotations.stream().map(this::proxy).collect(toList());
     }
 
-    private Annotation convert(AnnotationInstance jandexAnnotation) {
+    private Annotation proxy(AnnotationInstance jandexAnnotation) {
         return new AnnotationProxy(new JandexAnnotation(jandexAnnotation)).build();
     }
 
-    @Override public List<Annotation> all() {
-        return annotations;
-    }
+
+    @Override public List<Annotation> all() { return annotations; }
 
     @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
         return all().stream()

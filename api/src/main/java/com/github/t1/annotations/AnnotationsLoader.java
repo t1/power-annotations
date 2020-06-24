@@ -21,9 +21,9 @@ public abstract class AnnotationsLoader {
         return graphQlClientBuilder;
     }
 
-    protected abstract Annotations onType(Class<?> type);
+    public abstract Annotations onType(Class<?> type);
 
-    protected abstract Annotations onField(Class<?> type, String fieldName);
+    public abstract Annotations onField(Class<?> type, String fieldName);
 
-    protected abstract Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes);
+    public abstract Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes);
 }

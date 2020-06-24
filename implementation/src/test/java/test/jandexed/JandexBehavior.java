@@ -71,7 +71,7 @@ public class JandexBehavior {
 
     @Nested class WithoutReflectionFallback {
         @BeforeEach void setUp() {
-            loader.disableReflectionFallback();
+            loader.withoutReflection();
         }
 
         @Test void shouldGetNoClassAnnotationsWithoutIndexAndDisabledReflection() {

@@ -11,9 +11,7 @@ import java.lang.reflect.Proxy;
 class AnnotationProxy {
     private final AbstractAnnotation abstractAnnotation;
 
-    AnnotationProxy(AbstractAnnotation abstractAnnotation) {
-        this.abstractAnnotation = abstractAnnotation;
-    }
+    AnnotationProxy(AbstractAnnotation abstractAnnotation) { this.abstractAnnotation = abstractAnnotation; }
 
     Annotation build() {
         Class<?>[] interfaces = new Class[]{getAnnotationType(), Annotation.class};
@@ -38,7 +36,7 @@ class AnnotationProxy {
         String name = method.getName();
         if (method.getParameterCount() == 1 && "equals".equals(name))
             return proxy == args[0];
-        // no other methods can have arguments
+        // no other methods on annotations can have arguments (except for `wait`)
         assert method.getParameterCount() == 0;
         assert args == null || args.length == 0;
         if ("hashCode".equals(name))
