@@ -44,6 +44,7 @@ public class AnnotationsLoaderImpl extends AnnotationsLoader {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
         stack = new ReflectionAnnotationsLoader(skipReflection, stack);
         stack = JandexAnnotationsLoader.of(index, stack);
+        stack = MixinAnnotationsLoader.of(index, stack);
         return stack;
     }
 

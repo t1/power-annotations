@@ -31,7 +31,7 @@ public class JandexAnnotationsLoader extends AnnotationsLoader {
         ClassInfo classInfo = info(type);
         if (classInfo == null)
             return delegate.onType(type);
-        return new JandexAnnotations(classInfo.classAnnotations());
+        return new JandexAnnotations(index, classInfo.classAnnotations());
     }
 
     public Annotations onField(Class<?> type, String fieldName) {
@@ -41,7 +41,7 @@ public class JandexAnnotationsLoader extends AnnotationsLoader {
         FieldInfo field = classInfo.field(fieldName);
         if (field == null)
             throw new FieldNotFoundException(fieldName, type);
-        return new JandexAnnotations(field.annotations());
+        return new JandexAnnotations(index, field.annotations());
     }
 
     public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
@@ -49,7 +49,7 @@ public class JandexAnnotationsLoader extends AnnotationsLoader {
         if (classInfo == null)
             return delegate.onMethod(type, methodName, argTypes);
         return findMethod(classInfo, methodName, argTypes)
-            .map(method -> new JandexAnnotations(method.annotations()))
+            .map(method -> new JandexAnnotations(index, method.annotations()))
             .orElseThrow(() -> new MethodNotFoundException(methodName, argTypes, type));
     }
 
@@ -58,7 +58,7 @@ public class JandexAnnotationsLoader extends AnnotationsLoader {
         return index.getClassByName(name);
     }
 
-    private static Optional<MethodInfo> findMethod(ClassInfo classInfo, String methodName, Class<?>... argTypes) {
+    static Optional<MethodInfo> findMethod(ClassInfo classInfo, String methodName, Class<?>... argTypes) {
         return classInfo.methods().stream()
             .filter(methodInfo -> methodInfo.name().equals(methodName))
             .filter(methodInfo -> methodInfo.parameters().size() == argTypes.length)

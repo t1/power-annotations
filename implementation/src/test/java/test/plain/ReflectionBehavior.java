@@ -1,11 +1,14 @@
 package test.plain;
 
 import com.github.t1.annotations.Annotations;
+import com.github.t1.annotations.RepeatableAnnotationAccessedWithGetException;
 import org.junit.jupiter.api.Test;
+import test.jandexed.RepeatableAnnotation;
 import test.jandexed.SomeAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -30,10 +33,12 @@ public class ReflectionBehavior {
     @Test void shouldGetAllClassAnnotations() {
         List<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
-        then(annotations).hasSize(1);
-        then(annotations.get(0).annotationType()).isEqualTo(SomeAnnotation.class);
-        SomeAnnotation someAnnotation = (SomeAnnotation) annotations.get(0);
-        then(someAnnotation.value()).isEqualTo("some-reflection-class");
+        then(annotations.stream().map(Objects::toString)
+            .map(string -> string.replace("(value=", "("))) // JDK 8 behaves differently
+            .containsOnly(
+                "@" + SomeAnnotation.class.getName() + "(\"some-reflection-class\")",
+                "@" + RepeatableAnnotation.class.getName() + "(1)",
+                "@" + RepeatableAnnotation.class.getName() + "(2)");
     }
 
     @Test void shouldGetSingleFieldAnnotation() {
@@ -71,4 +76,16 @@ public class ReflectionBehavior {
         then(throwable).isInstanceOf(RuntimeException.class)
             .hasMessage("no method unknown(String) in " + SomeReflectionClass.class);
     }
+
+    @Test void shouldFailWithSingleAccess() {
+        Annotations annotations = Annotations.on(SomeReflectionClass.class);
+
+        Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+
+        then(throwable)
+            .isInstanceOf(RepeatableAnnotationAccessedWithGetException.class)
+            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is repeatable, " +
+                "so it should be queried with `all` not `get`.");
+    }
+
 }

@@ -14,7 +14,6 @@ import static java.nio.file.Files.newInputStream;
 public class JandexPrinter {
     public static void main(String[] args) {
         new JandexPrinter(Paths.get("implementation/target/test-classes/test/jandexed/META-INF/jandex.idx")).run();
-        new JandexPrinter(Paths.get("implementation/target/classes/META-INF/jandex.idx")).run();
     }
 
     private final Path indexFile;

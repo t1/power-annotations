@@ -11,10 +11,24 @@ If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotati
 This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection.
 
 
+=== Mixins
+
+Say you have a class that you want to but can't add annotations to; maybe it's a class from some library or even from the JDK.
+Then you can create your own class (or interface) and annotate it as `@MixinFor` the target class.
+The annotations you put on your mixin class will work as if they where on the target class.
+
+Note that the implementation requires a Jandex index file to find the mixins.
+And of course this works only for the annotations from frameworks that use Power-Annotations.
+
 == Planned Features
 
 * Stereotypes (incl. property propagation)
-* Mixins (requires Jandex to find the mixins)
 * class annotations as fallback for method/field
 * package annotations as fallback for classes
 * MP Config to overwrite annotations
+
+
+== Open Questions
+
+* How to test without reflection available (and some implementation details using Jandex)?
+* How should we handle multiple Mixins for the same class? Currently, it throws an error.
