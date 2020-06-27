@@ -22,13 +22,13 @@ And of course this works only for the annotations from frameworks that use Power
 
 == Planned Features
 
-* Stereotypes (incl. property propagation)
+* Stereotypes (basics)
+* MP Config to overwrite annotations
 * class annotations as fallback for method/field
 * package annotations as fallback for classes
-* MP Config to overwrite annotations
+* Stereotype property propagation, i.e. stereotype `@Property(name = "foo")` can be expanded to `@JsonbProperty(value = "foo")` (note the `name` -> `value`)
 
 
 == Open Questions
 
 * How to test without reflection available (and some implementation details using Jandex)?
-* How should we handle multiple Mixins for the same class? Currently, it throws an error.

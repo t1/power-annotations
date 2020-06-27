@@ -1,7 +1,7 @@
 package test.plain;
 
+import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
-import com.github.t1.annotations.RepeatableAnnotationAccessedWithGetException;
 import org.junit.jupiter.api.Test;
 import test.jandexed.RepeatableAnnotation;
 import test.jandexed.SomeAnnotation;
@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -83,9 +84,16 @@ public class ReflectionBehavior {
         Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
         then(throwable)
-            .isInstanceOf(RepeatableAnnotationAccessedWithGetException.class)
-            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is repeatable, " +
-                "so it should be queried with `all` not `get`.");
+            .isInstanceOf(AmbiguousAnnotationResolutionException.class)
+            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on " + SomeReflectionClass.class
+                + ". You should query it with `all` not `get`.");
     }
 
+    @Test void shouldGetTypedAll() {
+        Annotations annotations = Annotations.on(SomeReflectionClass.class);
+
+        Stream<RepeatableAnnotation> someAnnotations = annotations.all(RepeatableAnnotation.class);
+
+        then(someAnnotations.map(RepeatableAnnotation::value)).containsExactly(1, 2);
+    }
 }

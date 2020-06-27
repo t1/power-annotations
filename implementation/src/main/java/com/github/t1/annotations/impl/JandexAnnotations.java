@@ -1,16 +1,19 @@
 package com.github.t1.annotations.impl;
 
+import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
-import com.github.t1.annotations.RepeatableAnnotationAccessedWithGetException;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.Index;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Repeatable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import static com.github.t1.annotations.impl.AnnotationProxy.loadClass;
+import static com.github.t1.annotations.impl.CollectionUtils.toOptionalOrThrow;
 import static java.util.stream.Collectors.toList;
 
 class JandexAnnotations implements Annotations {
@@ -29,21 +32,53 @@ class JandexAnnotations implements Annotations {
     }
 
 
+    @Override public <T extends Annotation> Stream<T> all(Class<T> type) {
+        return annotations.stream()
+            .flatMap(JandexAnnotations::resolveRepeatableAnnotations)
+            .filter(instance -> instance.name().toString().equals(type.getName()))
+            .map(JandexAnnotations::proxy)
+            .map(type::cast)
+            ;
+    }
+
     @Override public List<Annotation> all() {
         return annotations.stream()
+            .flatMap(JandexAnnotations::resolveRepeatableAnnotations)
             .map(JandexAnnotations::proxy)
-            // TODO implement with Jandex: .flatMap(ReflectionAnnotationsLoader::resolveRepeatableAnnotations)
             .collect(toList());
     }
 
     @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
-        if (type.isAnnotationPresent(Repeatable.class)) // TODO use Jandex instead
-            throw new RepeatableAnnotationAccessedWithGetException(type);
         return annotations.stream()
+            .flatMap(JandexAnnotations::resolveRepeatableAnnotations)
             .filter(annotation -> annotation.name().toString().equals(type.getName()))
             .map(JandexAnnotations::proxy)
             .map(type::cast)
-            .findFirst();
+            .collect(toOptionalOrThrow(list -> new AmbiguousAnnotationResolutionException("The annotation " + type.getName()
+                + " is ambiguous on " + ". You should query it with `all` not `get`.") // TODO target info
+            ));
+    }
+
+    private static Stream<AnnotationInstance> resolveRepeatableAnnotations(AnnotationInstance annotation) {
+        if (isRepeatable(annotation))
+            return resolveRepeatable(annotation);
+        return Stream.of(annotation);
+    }
+
+    private static boolean isRepeatable(AnnotationInstance annotation) {
+        //noinspection unchecked
+        return ReflectionAnnotationsLoader.isRepeatable((Class<? extends Annotation>) loadClass(annotation.name().toString()));
+        // TODO implement with Jandex
+        // return annotation.values().size() == 1
+        //     && annotation.values().get(0).name().equals("value")
+        //     && annotation.value().kind() == ARRAY
+        //     && annotation.value().componentKind() == NESTED
+        //     && ...
+    }
+
+    private static Stream<AnnotationInstance> resolveRepeatable(AnnotationInstance annotation) {
+        return Stream.of((AnnotationValue[]) annotation.value().value())
+            .map(annotationValue -> (AnnotationInstance) annotationValue.value());
     }
 
     private static class JandexAnnotation implements AbstractAnnotation {

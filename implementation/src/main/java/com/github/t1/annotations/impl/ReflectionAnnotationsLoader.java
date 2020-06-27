@@ -1,8 +1,8 @@
 package com.github.t1.annotations.impl;
 
+import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
-import com.github.t1.annotations.RepeatableAnnotationAccessedWithGetException;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
@@ -60,27 +60,35 @@ public class ReflectionAnnotationsLoader extends AnnotationsLoader {
 
         ReflectionAnnotations(AnnotatedElement element) { this.element = element; }
 
+        @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
+            if (type.isAnnotationPresent(Repeatable.class))
+                throw new AmbiguousAnnotationResolutionException("The annotation " + type.getName()
+                    + " is ambiguous on " + element + ". You should query it with `all` not `get`.");
+            return Optional.ofNullable(element.getAnnotation(type));
+        }
+
         @Override public List<Annotation> all() {
             return Stream.of(element.getAnnotations())
                 .flatMap(ReflectionAnnotationsLoader::resolveRepeatableAnnotations)
                 .collect(toList());
         }
 
-        @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
-            if (type.isAnnotationPresent(Repeatable.class))
-                throw new RepeatableAnnotationAccessedWithGetException(type);
-            return Optional.ofNullable(element.getAnnotation(type));
+        @Override public <T extends Annotation> Stream<T> all(Class<T> type) {
+            return Stream.of(element.getAnnotations())
+                .flatMap(ReflectionAnnotationsLoader::resolveRepeatableAnnotations)
+                .filter(annotation -> annotation.annotationType().equals(type))
+                .map(type::cast);
         }
     }
 
 
     private static Stream<Annotation> resolveRepeatableAnnotations(Annotation annotation) {
         if (isRepeatable(annotation.annotationType()))
-            return repeatedAnnotation(annotation);
+            return resolveRepeatable(annotation);
         return Stream.of(annotation);
     }
 
-    private static boolean isRepeatable(Class<? extends Annotation> type) {
+    static boolean isRepeatable(Class<? extends Annotation> type) {
         for (Method method : type.getMethods())
             if ("value".equals(method.getName())
                 && method.getReturnType().isArray()
@@ -90,10 +98,11 @@ public class ReflectionAnnotationsLoader extends AnnotationsLoader {
         return false;
     }
 
-    private static Stream<Annotation> repeatedAnnotation(Annotation annotation) {
+    private static <T extends Annotation> Stream<T> resolveRepeatable(T annotation) {
         try {
             Method method = annotation.annotationType().getMethod("value");
-            Annotation[] value = (Annotation[]) method.invoke(annotation);
+            @SuppressWarnings("unchecked")
+            T[] value = (T[]) method.invoke(annotation);
             return Stream.of(value);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("assumed " + annotation + " to be repeatable", e);

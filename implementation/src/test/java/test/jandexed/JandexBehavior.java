@@ -17,7 +17,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static test.jandexed.TestTools.buildAnnotationsLoader;
 
 public class JandexBehavior {
-    AnnotationsLoaderImpl loader = buildAnnotationsLoader();
+    AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
 
     @Nested class FailingLoad {
         @Test void shouldNotLoadUnknownIndexResource() {
@@ -41,7 +41,7 @@ public class JandexBehavior {
 
     @Nested class ReflectionFallback {
         @Test void shouldGetFallbackClassAnnotation() {
-            Annotations annotations = loader.onType(SomeReflectionClass.class);
+            Annotations annotations = TheAnnotations.onType(SomeReflectionClass.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -50,7 +50,7 @@ public class JandexBehavior {
         }
 
         @Test void shouldGetFallbackFieldAnnotation() throws NoSuchFieldException {
-            Annotations annotations = loader.onField(SomeReflectionClass.class, "bar");
+            Annotations annotations = TheAnnotations.onField(SomeReflectionClass.class, "bar");
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -59,7 +59,7 @@ public class JandexBehavior {
         }
 
         @Test void shouldGetFallbackMethodAnnotation() throws NoSuchMethodException {
-            Annotations annotations = loader.onMethod(SomeReflectionClass.class, "foo", String.class);
+            Annotations annotations = TheAnnotations.onMethod(SomeReflectionClass.class, "foo", String.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -71,23 +71,23 @@ public class JandexBehavior {
 
     @Nested class WithoutReflectionFallback {
         @BeforeEach void setUp() {
-            loader.withoutReflection();
+            TheAnnotations.withoutReflection();
         }
 
         @Test void shouldGetNoClassAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = loader.onType(SomeReflectionClass.class);
+            Annotations annotations = TheAnnotations.onType(SomeReflectionClass.class);
 
             thenEmpty(annotations);
         }
 
         @Test void shouldGetNoFieldAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = loader.onField(SomeReflectionClass.class, "bar");
+            Annotations annotations = TheAnnotations.onField(SomeReflectionClass.class, "bar");
 
             thenEmpty(annotations);
         }
 
         @Test void shouldGetNoMethodAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = loader.onMethod(SomeReflectionClass.class, "foo", String.class);
+            Annotations annotations = TheAnnotations.onMethod(SomeReflectionClass.class, "foo", String.class);
 
             thenEmpty(annotations);
         }
@@ -101,7 +101,7 @@ public class JandexBehavior {
 
             @BeforeEach
             void setUp() {
-                this.someAnnotation = loader.onType(SomeClass.class).get(SomeAnnotation.class)
+                this.someAnnotation = TheAnnotations.onType(SomeClass.class).get(SomeAnnotation.class)
                     .orElseThrow(() -> new IllegalStateException("unreachable"));
                 assert Proxy.isProxyClass(someAnnotation.getClass());
             }
@@ -145,7 +145,7 @@ public class JandexBehavior {
         @Test void shouldGetClassAnnotation() {
             @SomeAnnotation("local-class")
             class SomeClass {}
-            Annotations annotations = loader.onType(SomeClass.class);
+            Annotations annotations = TheAnnotations.onType(SomeClass.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -154,7 +154,7 @@ public class JandexBehavior {
         }
 
         @Test void shouldGetInterfaceAnnotation() {
-            Annotations annotations = loader.onType(SomeInterface.class);
+            Annotations annotations = TheAnnotations.onType(SomeInterface.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -165,7 +165,7 @@ public class JandexBehavior {
         @Test void shouldGetNoClassAnnotation() {
             class SomeClass {}
 
-            Annotations annotations = loader.onType(SomeClass.class);
+            Annotations annotations = TheAnnotations.onType(SomeClass.class);
 
             thenEmpty(annotations);
         }
@@ -180,7 +180,7 @@ public class JandexBehavior {
                 String foo;
             }
 
-            Throwable throwable = catchThrowable(() -> loader.onField(SomeClass.class, "bar"));
+            Throwable throwable = catchThrowable(() -> TheAnnotations.onField(SomeClass.class, "bar"));
 
             then(throwable).isInstanceOf(RuntimeException.class)
                 .hasMessage("no field 'bar' in " + SomeClass.class);
@@ -192,7 +192,7 @@ public class JandexBehavior {
                 @SomeAnnotation("local-class-field")
                 private String foo;
             }
-            Annotations annotations = loader.onField(SomeClass.class, "foo");
+            Annotations annotations = TheAnnotations.onField(SomeClass.class, "foo");
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -206,7 +206,7 @@ public class JandexBehavior {
                 String foo;
             }
 
-            Annotations annotations = loader.onField(SomeClass.class, "foo");
+            Annotations annotations = TheAnnotations.onField(SomeClass.class, "foo");
 
             thenEmpty(annotations);
         }
@@ -220,7 +220,7 @@ public class JandexBehavior {
                 @SomeAnnotation("local-class-method")
                 void foo(String x) {}
             }
-            Annotations annotations = loader.onMethod(SomeClass.class, "foo", String.class);
+            Annotations annotations = TheAnnotations.onMethod(SomeClass.class, "foo", String.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -229,7 +229,7 @@ public class JandexBehavior {
         }
 
         @Test void shouldGetInterfaceMethodAnnotation() throws NoSuchMethodException {
-            Annotations annotations = loader.onMethod(SomeInterface.class, "foo", String.class);
+            Annotations annotations = TheAnnotations.onMethod(SomeInterface.class, "foo", String.class);
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
@@ -244,7 +244,7 @@ public class JandexBehavior {
                 void foo(String x) {}
             }
 
-            Throwable throwable = catchThrowable(() -> loader.onMethod(SomeClass.class, "bar", String.class));
+            Throwable throwable = catchThrowable(() -> TheAnnotations.onMethod(SomeClass.class, "bar", String.class));
 
             then(throwable).isInstanceOf(RuntimeException.class)
                 .hasMessage("no method bar(String) in " + SomeClass.class);
@@ -257,7 +257,7 @@ public class JandexBehavior {
                 void foo(String x) {}
             }
 
-            Throwable throwable = catchThrowable(() -> loader.onMethod(SomeClass.class, "foo"));
+            Throwable throwable = catchThrowable(() -> TheAnnotations.onMethod(SomeClass.class, "foo"));
 
             then(throwable).isInstanceOf(RuntimeException.class)
                 .hasMessage("no method foo() in " + SomeClass.class);
@@ -270,7 +270,7 @@ public class JandexBehavior {
                 void foo(String x) {}
             }
 
-            Throwable throwable = catchThrowable(() -> loader.onMethod(SomeClass.class, "foo", String.class, int.class));
+            Throwable throwable = catchThrowable(() -> TheAnnotations.onMethod(SomeClass.class, "foo", String.class, int.class));
 
             then(throwable).isInstanceOf(RuntimeException.class)
                 .hasMessage("no method foo(String, int) in " + SomeClass.class);
@@ -284,7 +284,7 @@ public class JandexBehavior {
                 void foo(int x) {}
             }
 
-            Throwable throwable = catchThrowable(() -> loader.onMethod(SomeClass.class, "foo", String.class));
+            Throwable throwable = catchThrowable(() -> TheAnnotations.onMethod(SomeClass.class, "foo", String.class));
 
             then(throwable).isInstanceOf(RuntimeException.class)
                 .hasMessage("no method foo(String) in " + SomeClass.class);
@@ -296,18 +296,18 @@ public class JandexBehavior {
                 void foo(String x) {}
             }
 
-            Annotations annotations = loader.onMethod(SomeClass.class, "foo", String.class);
+            Annotations annotations = TheAnnotations.onMethod(SomeClass.class, "foo", String.class);
 
             thenEmpty(annotations);
         }
     }
 
-    private void thenEmpty(Annotations annotations) {
+    void thenEmpty(Annotations annotations) {
         then(annotations.all()).isEmpty();
         then(annotations.get(SomeAnnotation.class)).isEmpty();
     }
 
-    private ObjectAssert<SomeAnnotation> thenIsSomeAnnotation(Optional<SomeAnnotation> annotation, String expectedValue) {
+    ObjectAssert<SomeAnnotation> thenIsSomeAnnotation(Optional<SomeAnnotation> annotation, String expectedValue) {
         assert annotation.isPresent();
         SomeAnnotation someAnnotation = annotation.get();
         then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);

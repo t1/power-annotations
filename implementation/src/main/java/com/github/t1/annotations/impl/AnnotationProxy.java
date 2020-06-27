@@ -19,9 +19,12 @@ class AnnotationProxy {
     }
 
     private Class<?> getAnnotationType() {
-        String typeName = abstractAnnotation.getTypeName();
+        return loadClass(abstractAnnotation.getTypeName());
+    }
+
+    static Class<?> loadClass(String typeName) {
         try {
-            return getClassLoader().loadClass(typeName);
+            return getClassLoader().loadClass(typeName); // TODO implement with Jandex
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("can't load annotation type " + typeName, e);
         }

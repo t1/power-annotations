@@ -1,8 +1,8 @@
 package test.jandexed;
 
+import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.MixinFor;
-import com.github.t1.annotations.RepeatableAnnotationAccessedWithGetException;
 import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,35 +11,70 @@ import org.mockito.Incubating;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.jandexed.TestTools.buildAnnotationsLoader;
 
 public class MixinBehavior {
-    AnnotationsLoaderImpl loader = buildAnnotationsLoader();
-
-
-    @Test void shouldFailToGetClassAnnotationFromMultipleMixins() {
-        class MixedClass {}
-
-        @MixinFor(MixedClass.class)
-        class MixinClass1 {}
-
-        @MixinFor(MixedClass.class)
-        class MixinClass2 {}
-
-        Throwable throwable = catchThrowable(() -> loader.onType(MixedClass.class));
-
-        then(throwable)
-            .isExactlyInstanceOf(RuntimeException.class)
-            .hasMessageStartingWith("multiple mixins for " + MixedClass.class + ": [")
-            .hasMessageContaining(MixinClass1.class.getName()) // the order may be inverted
-            .hasMessageContaining(MixinClass2.class.getName())
-            .hasMessageEndingWith("]");
-    }
+    AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
 
     @Nested class ClassAnnotations {
+        @Test void shouldGetClassAnnotationFromMultipleMixins() {
+            class TargetClassWithTwoMixins {}
+
+            @MixinFor(TargetClassWithTwoMixins.class)
+            @SomeAnnotation("one")
+            class MixinClass1 {}
+
+            @MixinFor(TargetClassWithTwoMixins.class)
+            @RepeatableAnnotation(2)
+            class MixinClass2 {}
+
+            Optional<SomeAnnotation> someAnnotation = TheAnnotations.onType(TargetClassWithTwoMixins.class)
+                .get(SomeAnnotation.class);
+
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
+        }
+
+        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetClassWithTwoNonRepeatableMixins {}
+
+            @MixinFor(TargetClassWithTwoNonRepeatableMixins.class)
+            @SomeAnnotation("one")
+            class MixinClass1 {}
+
+            @MixinFor(TargetClassWithTwoNonRepeatableMixins.class)
+            @SomeAnnotation("one")
+            class MixinClass2 {}
+
+            Annotations annotations = TheAnnotations.onType(TargetClassWithTwoNonRepeatableMixins.class);
+
+            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
+        @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetClassWithTwoRepeatableMixins {}
+
+            @MixinFor(TargetClassWithTwoRepeatableMixins.class)
+            @RepeatableAnnotation(1)
+            class MixinClass1 {}
+
+            @MixinFor(TargetClassWithTwoRepeatableMixins.class)
+            @RepeatableAnnotation(2)
+            class MixinClass2 {}
+
+            Annotations annotations = TheAnnotations.onType(TargetClassWithTwoRepeatableMixins.class);
+
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
         @Incubating
         @SomeAnnotation("to-be-replaced")
         @RepeatableAnnotation(2)
@@ -51,7 +86,7 @@ public class MixinBehavior {
         @RepeatableAnnotation(1)
         class MixinClass {}
 
-        Annotations annotations = loader.onType(TargetClass.class);
+        Annotations annotations = TheAnnotations.onType(TargetClass.class);
 
         @Test void shouldGetTargetClassAnnotation() {
             Optional<Incubating> annotation = annotations.get(Incubating.class);
@@ -75,7 +110,9 @@ public class MixinBehavior {
         @Test void shouldFailToGetRepeatableClassAnnotation() {
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(RepeatableAnnotationAccessedWithGetException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
+                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
+                    + ". You should query it with `all` not `get`.");
         }
 
         @Test void shouldGetAllClassAnnotations() {
@@ -90,10 +127,90 @@ public class MixinBehavior {
                 "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\")",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
+
+        @Test void shouldGetAllRepeatableClassAnnotations() {
+            Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
+
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+        }
     }
 
     @Nested class FieldAnnotations {
-        class TargetClass {
+        @Test void shouldGetClassAnnotationFromMultipleMixins() {
+            class TargetFieldClassWithTwoMixins {
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoMixins.class)
+            class MixinClass1 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoMixins.class)
+            class MixinClass2 {
+                @RepeatableAnnotation(2)
+                @SuppressWarnings("unused") String foo;
+            }
+
+            Optional<SomeAnnotation> someAnnotation = TheAnnotations.onField(TargetFieldClassWithTwoMixins.class, "foo")
+                .get(SomeAnnotation.class);
+
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
+        }
+
+        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetFieldClassWithTwoNonRepeatableMixins {
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoNonRepeatableMixins.class)
+            class MixinClass1 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoNonRepeatableMixins.class)
+            class MixinClass2 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo;
+            }
+
+            Annotations annotations = TheAnnotations.onField(TargetFieldClassWithTwoNonRepeatableMixins.class, "foo");
+
+            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
+        @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetFieldClassWithTwoRepeatableMixins {
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoRepeatableMixins.class)
+            class MixinClass1 {
+                @RepeatableAnnotation(1)
+                @SuppressWarnings("unused") String foo;
+            }
+
+            @MixinFor(TargetFieldClassWithTwoRepeatableMixins.class)
+            class MixinClass2 {
+                @RepeatableAnnotation(2)
+                @SuppressWarnings("unused") String foo;
+            }
+
+            Annotations annotations = TheAnnotations.onField(TargetFieldClassWithTwoRepeatableMixins.class, "foo");
+
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
+        class TargetFieldClass {
             @SuppressWarnings("unused")
             @Incubating
             @SomeAnnotation("to-be-replaced")
@@ -104,7 +221,7 @@ public class MixinBehavior {
             String bar;
         }
 
-        @MixinFor(TargetClass.class)
+        @MixinFor(TargetFieldClass.class)
         class MixinClass {
             @SuppressWarnings("unused")
             @Deprecated
@@ -113,10 +230,10 @@ public class MixinBehavior {
             String foo;
         }
 
-        Annotations annotations = loader.onField(TargetClass.class, "foo");
+        Annotations annotations = TheAnnotations.onField(TargetFieldClass.class, "foo");
 
-        @Test void shouldNotGetUndefinedFieldAnnotation() {
-            Annotations annotations = loader.onField(TargetClass.class, "bar");
+        @Test void shouldSkipUndefinedMixinFieldAnnotation() {
+            Annotations annotations = TheAnnotations.onField(TargetFieldClass.class, "bar");
 
             Optional<Incubating> deprecated = annotations.get(Incubating.class);
 
@@ -145,7 +262,9 @@ public class MixinBehavior {
         @Test void shouldFailToGetRepeatableFieldAnnotation() {
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(RepeatableAnnotationAccessedWithGetException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
+                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
+                    + ". You should query it with `all` not `get`.");
         }
 
         @Test void shouldGetAllFieldAnnotations() {
@@ -159,10 +278,90 @@ public class MixinBehavior {
                 "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
+
+        @Test void shouldGetAllRepeatableFieldAnnotations() {
+            Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
+
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+        }
     }
 
     @Nested class MethodAnnotations {
-        class TargetClass {
+        @Test void shouldGetClassAnnotationFromMultipleMixins() {
+            class TargetMethodClassWithTwoMixins {
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoMixins.class)
+            class MixinClass1 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoMixins.class)
+            class MixinClass2 {
+                @RepeatableAnnotation(2)
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            Optional<SomeAnnotation> someAnnotation = TheAnnotations.onMethod(TargetMethodClassWithTwoMixins.class, "foo")
+                .get(SomeAnnotation.class);
+
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
+        }
+
+        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetMethodClassWithTwoNonRepeatableMixins {
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoNonRepeatableMixins.class)
+            class MixinClass1 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoNonRepeatableMixins.class)
+            class MixinClass2 {
+                @SomeAnnotation("one")
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            Annotations annotations = TheAnnotations.onMethod(TargetMethodClassWithTwoNonRepeatableMixins.class, "foo");
+
+            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
+        @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
+            class TargetMethodClassWithTwoRepeatableMixins {
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoRepeatableMixins.class)
+            class MixinClass1 {
+                @RepeatableAnnotation(1)
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            @MixinFor(TargetMethodClassWithTwoRepeatableMixins.class)
+            class MixinClass2 {
+                @RepeatableAnnotation(2)
+                @SuppressWarnings("unused") String foo() { return "foo"; }
+            }
+
+            Annotations annotations = TheAnnotations.onMethod(TargetMethodClassWithTwoRepeatableMixins.class, "foo");
+
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+
+            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+        }
+
+        class TargetMethodClass {
             @SuppressWarnings("unused")
             @Incubating
             @SomeAnnotation("to-be-replaced")
@@ -173,7 +372,7 @@ public class MixinBehavior {
             String bar() { return "bar"; }
         }
 
-        @MixinFor(TargetClass.class)
+        @MixinFor(TargetMethodClass.class)
         class MixinClass {
             @SuppressWarnings("unused")
             @Deprecated
@@ -182,10 +381,10 @@ public class MixinBehavior {
             String foo() { return "foo"; }
         }
 
-        Annotations annotations = loader.onMethod(TargetClass.class, "foo");
+        Annotations annotations = TheAnnotations.onMethod(TargetMethodClass.class, "foo");
 
-        @Test void shouldNotGetUndefinedMethodAnnotation() {
-            Annotations annotations = loader.onMethod(TargetClass.class, "bar");
+        @Test void shouldSkipUndefinedMixinMethodAnnotation() {
+            Annotations annotations = TheAnnotations.onMethod(TargetMethodClass.class, "bar");
 
             Optional<Incubating> deprecated = annotations.get(Incubating.class);
 
@@ -214,7 +413,9 @@ public class MixinBehavior {
         @Test void shouldFailToGetRepeatableMethodAnnotation() {
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(RepeatableAnnotationAccessedWithGetException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
+                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
+                    + ". You should query it with `all` not `get`.");
         }
 
         @Test void shouldGetAllMethodAnnotations() {
@@ -226,6 +427,14 @@ public class MixinBehavior {
                 "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\")",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+        }
+
+        @Test void shouldGetAllRepeatableMethodAnnotations() {
+            Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
+
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
     }

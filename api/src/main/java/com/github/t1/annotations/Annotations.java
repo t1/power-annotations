@@ -3,6 +3,7 @@ package com.github.t1.annotations;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface Annotations {
     static Annotations on(Class<?> type) {
@@ -25,16 +26,27 @@ public interface Annotations {
     List<Annotation> all();
 
     /**
-     * Get the {@link Annotation} instance of this type.
-     * If the annotation type is {@link java.lang.annotation.Repeatable},
-     * this method throws a {@link RepeatableAnnotationAccessedWithGetException},
-     * so making an annotation repeatable is a breaking change, but that's better than
-     * breaking, because indirectly available annotations (e.g. from stereotypes)
-     * become suddenly visible.
-     *
-     * TODO discuss
+     * Get the 'strongest' {@link Annotation} instance of this type.
+     * Multiple annotations may be applicable, e.g. from {@link MixinFor mixins}/
+     * The annotation will be picked in this order:
+     * <ol>
+     *     <li>mixin</li>
+     *     <li>target</li>
+     *     <li>target stereotypes</li>
+     *     <li>containing class (TODO not yet implemented)</li>
+     *     <li>containing class stereotypes (TODO not yet implemented)</li>
+     *     <li>containing package (TODO not yet implemented)</li>
+     *     <li>containing package stereotypes (TODO not yet implemented)</li>
+     * </ol>
+     * If this order not sufficiently defined, e.g. because there are multiple repeatable annotations,
+     * or because there are two mixins with the same annotation for the same class,
+     * an {@link AmbiguousAnnotationResolutionException} is thrown.
      */
     <T extends Annotation> Optional<T> get(Class<T> type);
 
-    // TODO <T extends Annotation> Stream<T> all(Class<T> type);
+    /**
+     * Get all (eventually {@link java.lang.annotation.Repeatable repeatable})
+     * {@link Annotation} instances of this <code>type</code>.
+     */
+    <T extends Annotation> Stream<T> all(Class<T> type);
 }
