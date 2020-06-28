@@ -23,11 +23,11 @@ import static com.github.t1.annotations.impl.AnnotationProxy.getClassLoader;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 
-class Jandexer {
+public class Jandexer {
     private static final Logger LOG = Logger.getLogger(Jandexer.class.getName());
 
-    static IndexView initFromResource(@SuppressWarnings("SameParameterValue") String resource) {
-        try (InputStream inputStream = getClassLoader().getResourceAsStream(resource)) {
+    public static IndexView init() {
+        try (InputStream inputStream = getClassLoader().getResourceAsStream("META-INF/jandex.idx")) {
             IndexView indexView = initFrom(inputStream);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("------------------------------------------------------------");

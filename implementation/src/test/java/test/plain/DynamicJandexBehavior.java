@@ -50,6 +50,7 @@ public class DynamicJandexBehavior {
         then(someAnnotation.value()).isEqualTo("some-reflection-field");
     }
 
+    // implementation detail
     @Test void shouldFailToGetUnknownFieldAnnotation() {
         Throwable throwable = catchThrowable(() -> Annotations.onField(SomeReflectionClass.class, "unknown"));
 
@@ -68,6 +69,7 @@ public class DynamicJandexBehavior {
         then(someAnnotation.value()).isEqualTo("some-reflection-method");
     }
 
+    // implementation detail
     @Test void shouldFailToGetUnknownMethodAnnotation() {
         Throwable throwable = catchThrowable(() -> Annotations.onMethod(SomeReflectionClass.class, "unknown", String.class));
 
@@ -75,7 +77,7 @@ public class DynamicJandexBehavior {
             .hasMessage("no method unknown(String) in " + SomeReflectionClass.class);
     }
 
-    @Test void shouldFailWithSingleAccess() {
+    @Test void shouldFailToGetRepeatedAnnotation() {
         Annotations annotations = Annotations.on(SomeReflectionClass.class);
 
         Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
@@ -83,7 +85,7 @@ public class DynamicJandexBehavior {
         then(throwable)
             .isInstanceOf(AmbiguousAnnotationResolutionException.class)
             .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                + ". You should query it with `all` not `get`.");
+                + ". You should query it with `all` not `get`."); // the message is an implementation detail
     }
 
     @Test void shouldGetTypedAll() {

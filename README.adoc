@@ -20,9 +20,16 @@ The annotations you put on your mixin class will work as if they where on the ta
 Note that the implementation requires a Jandex index file to find the mixins.
 And of course this works only for the annotations from frameworks that use Power-Annotations.
 
+
+=== Stereotypes
+
+Just like https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes], but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class, but as that would exclude CDI, any annotation with that name will work.
+
+The simplest use-case for Stereotypes is aliasing, i.e. using one annotation instead of another, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations). And it gets more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B.
+
+
 == Planned Features
 
-* Stereotypes (basics)
 * MP Config to overwrite annotations
 * class annotations as fallback for method/field
 * package annotations as fallback for classes
@@ -31,4 +38,5 @@ And of course this works only for the annotations from frameworks that use Power
 
 == Open Questions
 
-* How to test without reflection available (and some implementation details using Jandex)?
+* How to test without reflection available? (and some implementation details using Jandex)
+* We may need to overwrite repeatable annotations instead of merging them. Maybe this should be an option on the Annotations API or another meta-annotation.

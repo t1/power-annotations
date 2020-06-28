@@ -23,6 +23,7 @@ public class JandexBehavior {
             then(loader).isNotNull();
         }
 
+        // implementation detail
         @Test void shouldFailToLoadInvalidIndexInputStream() throws Exception {
             FileInputStream inputStream = new FileInputStream("pom.xml");
 
@@ -72,6 +73,7 @@ public class JandexBehavior {
 
 
     @Nested class FieldAnnotations {
+        // implementation detail
         @Test void shouldFailToGetUnknownFieldAnnotation() {
             @SuppressWarnings("unused")
             class SomeClass {
@@ -136,6 +138,7 @@ public class JandexBehavior {
                 .isNotSameAs(SomeInterface.class.getDeclaredMethod("foo", String.class).getAnnotation(SomeAnnotation.class));
         }
 
+        // implementation detail
         @Test void shouldFailToGetAnnotationsFromUnknownMethodName() {
             @SuppressWarnings("unused")
             class SomeClass {
@@ -149,6 +152,7 @@ public class JandexBehavior {
                 .hasMessage("no method bar(String) in " + SomeClass.class);
         }
 
+        // implementation detail
         @Test void shouldFailToGetAnnotationsFromMethodWithTooManyArguments() {
             @SuppressWarnings("unused")
             class SomeClass {
@@ -162,6 +166,7 @@ public class JandexBehavior {
                 .hasMessage("no method foo() in " + SomeClass.class);
         }
 
+        // implementation detail
         @Test void shouldFailToGetAnnotationsFromMethodWithTooFewArguments() {
             @SuppressWarnings("unused")
             class SomeClass {
@@ -175,7 +180,7 @@ public class JandexBehavior {
                 .hasMessage("no method foo(String, int) in " + SomeClass.class);
         }
 
-
+        // implementation detail
         @Test void shouldFailToGetAnnotationsFromMethodWithWrongArgumentType() {
             @SuppressWarnings("unused")
             class SomeClass {

@@ -5,18 +5,19 @@ import com.github.t1.annotations.AnnotationsLoader;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.t1.annotations.impl.AnnotationsLoaderImpl.JANDEX;
-
 class JandexAnnotationsLoader extends AnnotationsLoader {
+    private final IndexView jandex;
     private final AnnotationsLoader delegate;
 
-    JandexAnnotationsLoader(AnnotationsLoader delegate) {
+    JandexAnnotationsLoader(IndexView jandex, AnnotationsLoader delegate) {
+        this.jandex = jandex;
         this.delegate = delegate;
     }
 
@@ -48,7 +49,7 @@ class JandexAnnotationsLoader extends AnnotationsLoader {
 
     private ClassInfo info(Class<?> type) {
         DotName name = DotName.createSimple(type.getName());
-        return JANDEX.getClassByName(name);
+        return jandex.getClassByName(name);
     }
 
     static Optional<MethodInfo> findMethod(ClassInfo classInfo, String methodName, Class<?>... argTypes) {

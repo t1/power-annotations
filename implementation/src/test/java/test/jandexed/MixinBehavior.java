@@ -112,7 +112,7 @@ public class MixinBehavior {
 
             then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
                 .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`.");
+                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
         }
 
         @Test void shouldGetAllClassAnnotations() {
@@ -264,7 +264,7 @@ public class MixinBehavior {
 
             then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
                 .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`.");
+                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
         }
 
         @Test void shouldGetAllFieldAnnotations() {
@@ -415,7 +415,7 @@ public class MixinBehavior {
 
             then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
                 .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`.");
+                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
         }
 
         @Test void shouldGetAllMethodAnnotations() {

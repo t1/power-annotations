@@ -5,23 +5,26 @@ import com.github.t1.annotations.AnnotationsLoader;
 import org.jboss.jandex.IndexView;
 
 public class AnnotationsLoaderImpl extends AnnotationsLoader {
-    /** visible for testing: we need to load a different index file */
-    public static IndexView JANDEX;
-
+    private final IndexView jandex;
     private final AnnotationsLoader loader;
 
     /** Used by the ServiceLoader */
     @SuppressWarnings("unused")
     public AnnotationsLoaderImpl() {
-        if (JANDEX == null)
-            JANDEX = Jandexer.initFromResource("META-INF/jandex.idx");
+        this(Jandexer.init());
+    }
+
+    /** visible for testing: we need to load different index files */
+    public AnnotationsLoaderImpl(IndexView jandex) {
+        this.jandex = jandex;
         this.loader = buildLoader();
     }
 
     private AnnotationsLoader buildLoader() {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
-        stack = new JandexAnnotationsLoader(stack);
-        stack = new MixinAnnotationsLoader(stack);
+        stack = new JandexAnnotationsLoader(jandex, stack);
+        stack = new StereotypeLoader(jandex, stack);
+        stack = new MixinAnnotationsLoader(jandex, stack);
         return stack;
     }
 
