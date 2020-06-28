@@ -1,18 +1,14 @@
 package com.github.t1.quarkus;
 
 import com.github.t1.annotations.Annotations;
+import org.eclipse.microprofile.graphql.GraphQLApi;
+import org.eclipse.microprofile.graphql.Query;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-@Path("/hi")
+@GraphQLApi
 @SomeAnnotation("direct")
 public class GreetingBoundary {
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Query
     public String hello() {
         return "ho:" + Annotations.on(GreetingBoundary.class)
             .get(SomeAnnotation.class)

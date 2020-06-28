@@ -20,6 +20,10 @@
 
         <quarkus.version>1.5.2.Final</quarkus.version>
         <power-annotations.version>1.0-SNAPSHOT</power-annotations.version>
+
+        <assertj.version>3.16.1</assertj.version>
+        <smallrye-graphql.version>1.0.4</smallrye-graphql.version>
+        <resteasy-client.version>4.5.5.Final</resteasy-client.version>
     </properties>
 
     <dependencyManagement>
@@ -35,10 +39,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-graphql</artifactId>
@@ -63,13 +63,28 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-graphql-client</artifactId>
+            <version>${smallrye-graphql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <version>${resteasy-client.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <defaultGoal>clean verify</defaultGoal>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.jboss.jandex</groupId>

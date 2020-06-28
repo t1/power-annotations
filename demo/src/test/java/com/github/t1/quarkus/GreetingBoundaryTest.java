@@ -1,20 +1,37 @@
 package com.github.t1.quarkus;
 
+import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.graphql.client.typesafe.api.GraphQlClientApi;
+import io.smallrye.graphql.client.typesafe.api.GraphQlClientBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.when;
-import static org.hamcrest.CoreMatchers.is;
+import java.net.URL;
+
+import static org.assertj.core.api.BDDAssertions.then;
 
 @QuarkusTest
-public class GreetingBoundaryTest {
+class GreetingBoundaryTest {
 
-    @Test
-    public void testHelloEndpoint() {
-        when().get("/hi")
+    @GraphQlClientApi
+    private interface Api {
+        String hello();
+    }
 
-            .then()
-            .statusCode(200)
-            .body(is("ho:direct"));
+    private Api api;
+
+    @TestHTTPResource URL url;
+
+    @BeforeEach void setUp() {
+        api = GraphQlClientBuilder.newBuilder()
+            .endpoint(url + "/graphql")
+            .build(Api.class);
+    }
+
+    @Test void testHelloEndpoint() {
+        String hello = api.hello();
+
+        then(hello).isEqualTo("ho:direct");
     }
 }
