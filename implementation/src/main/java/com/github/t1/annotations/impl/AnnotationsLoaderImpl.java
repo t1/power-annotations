@@ -21,7 +21,6 @@ public class AnnotationsLoaderImpl extends AnnotationsLoader {
     private AnnotationsLoader buildLoader() {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
         stack = new JandexAnnotationsLoader(stack);
-        stack = new StereotypeLoader(stack);
         stack = new MixinAnnotationsLoader(stack);
         return stack;
     }
