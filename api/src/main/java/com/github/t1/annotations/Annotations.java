@@ -39,8 +39,10 @@ public interface Annotations {
      *     <li>containing package stereotypes (TODO not yet implemented)</li>
      * </ol>
      * If this order not sufficiently defined, e.g. because there are multiple repeatable annotations,
-     * or because there are two mixins with the same annotation for the same class,
-     * an {@link AmbiguousAnnotationResolutionException} is thrown.
+     * or because there are multiple mixins or stereotypes with the same annotation,
+     * an {@link AmbiguousAnnotationResolutionException} is thrown. I.e. when an annotation is changed
+     * to be repeatable, all frameworks using this annotation will have to use {@link #all(Class)} instead
+     * (of course), but the semantics for the client code changes, which may break existing code.
      */
     <T extends Annotation> Optional<T> get(Class<T> type);
 

@@ -4,9 +4,10 @@ import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.Index;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Repeatable;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -18,14 +19,11 @@ import static java.util.stream.Collectors.toList;
 
 class JandexAnnotations implements Annotations {
 
-    private final Index index; // we will need this when we completely stop using reflection
     private final Collection<AnnotationInstance> annotations;
 
-    public JandexAnnotations(Index index, Collection<AnnotationInstance> annotations) {
-        this.index = index;
+    JandexAnnotations(Collection<AnnotationInstance> annotations) {
         this.annotations = annotations;
     }
-
 
     static Annotation proxy(AnnotationInstance jandexAnnotation) {
         return new AnnotationProxy(new JandexAnnotation(jandexAnnotation)).build();
@@ -66,8 +64,15 @@ class JandexAnnotations implements Annotations {
     }
 
     private static boolean isRepeatable(AnnotationInstance annotation) {
-        //noinspection unchecked
-        return ReflectionAnnotationsLoader.isRepeatable((Class<? extends Annotation>) loadClass(annotation.name().toString()));
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation> type = (Class<? extends Annotation>) loadClass(annotation.name().toString());
+        for (Method method : type.getMethods())
+            if ("value".equals(method.getName())
+                && method.getReturnType().isArray()
+                && method.getReturnType().getComponentType().isAnnotation()
+                && method.getReturnType().getComponentType().isAnnotationPresent(Repeatable.class))
+                return true;
+        return false;
         // TODO implement with Jandex
         // return annotation.values().size() == 1
         //     && annotation.values().get(0).name().equals("value")
@@ -84,7 +89,7 @@ class JandexAnnotations implements Annotations {
     private static class JandexAnnotation implements AbstractAnnotation {
         private final AnnotationInstance jandexAnnotation;
 
-        public JandexAnnotation(AnnotationInstance jandexAnnotation) { this.jandexAnnotation = jandexAnnotation; }
+        JandexAnnotation(AnnotationInstance jandexAnnotation) { this.jandexAnnotation = jandexAnnotation; }
 
         @Override public Object property(String name) {
             return jandexAnnotation.value(name).value();

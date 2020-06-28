@@ -32,6 +32,6 @@ class GreetingBoundaryTest {
     @Test void testHelloEndpoint() {
         String hello = api.hello();
 
-        then(hello).isEqualTo("ho:direct");
+        then(hello).isEqualTo("annotation-value:mixed-in");
     }
 }

@@ -2,49 +2,27 @@ package com.github.t1.annotations.impl;
 
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.IndexReader;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.github.t1.annotations.impl.AnnotationProxy.getClassLoader;
+import org.jboss.jandex.IndexView;
 
 public class AnnotationsLoaderImpl extends AnnotationsLoader {
+    /** visible for testing: we need to load a different index file */
+    public static IndexView JANDEX;
 
-    private final AtomicBoolean skipReflection = new AtomicBoolean(false);
     private final AnnotationsLoader loader;
 
     /** Used by the ServiceLoader */
     @SuppressWarnings("unused")
     public AnnotationsLoaderImpl() {
-        this("META-INF/jandex.idx");
+        if (JANDEX == null)
+            JANDEX = Jandexer.initFromResource("META-INF/jandex.idx");
+        this.loader = buildLoader();
     }
 
-    /** visible for testing: we need to try to load an unknown index file */
-    public AnnotationsLoaderImpl(String indexResource) {
-        try (InputStream inputStream = getClassLoader().getResourceAsStream(indexResource)) {
-            this.loader = buildLoader((inputStream == null) ? null : new IndexReader(inputStream).read());
-        } catch (RuntimeException | IOException e) {
-            throw new RuntimeException("can't read " + indexResource, e);
-        }
-    }
-
-    /** visible for testing: we need to load a different index file */
-    public AnnotationsLoaderImpl(InputStream inputStream) {
-        try {
-            this.loader = buildLoader(new IndexReader(inputStream).read());
-        } catch (RuntimeException | IOException e) {
-            throw new RuntimeException("can't read Jandex input stream", e);
-        }
-    }
-
-    private AnnotationsLoader buildLoader(Index index) {
+    private AnnotationsLoader buildLoader() {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
-        stack = new ReflectionAnnotationsLoader(skipReflection, stack);
-        stack = JandexAnnotationsLoader.of(index, stack);
-        stack = MixinAnnotationsLoader.of(index, stack);
+        stack = new JandexAnnotationsLoader(stack);
+        stack = new StereotypeLoader(stack);
+        stack = new MixinAnnotationsLoader(stack);
         return stack;
     }
 
@@ -58,10 +36,5 @@ public class AnnotationsLoaderImpl extends AnnotationsLoader {
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
         return loader.onMethod(type, methodName, argTypes);
-    }
-
-    /** visible for testing: it's not easy to simulate reflection being disabled */
-    public void withoutReflection() {
-        this.skipReflection.set(true);
     }
 }

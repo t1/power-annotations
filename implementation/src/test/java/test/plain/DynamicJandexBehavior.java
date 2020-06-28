@@ -16,10 +16,10 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
 /**
- * If Jandex is not available, silently fall back to using reflection.
+ * If the Jandex index file is not available, silently build the index at runtime.
  * This test also covers the {@link Annotations API} and {@link com.github.t1.annotations.AnnotationsLoader SPI}
  */
-public class ReflectionBehavior {
+public class DynamicJandexBehavior {
 
     @Test void shouldGetSingleClassAnnotation() {
         Optional<SomeAnnotation> annotation = Annotations.on(SomeReflectionClass.class).get(SomeAnnotation.class);
@@ -28,18 +28,15 @@ public class ReflectionBehavior {
         SomeAnnotation someAnnotation = annotation.get();
         then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);
         then(someAnnotation.value()).isEqualTo("some-reflection-class");
-        then(someAnnotation).isSameAs(SomeReflectionClass.class.getAnnotation(SomeAnnotation.class));
     }
 
     @Test void shouldGetAllClassAnnotations() {
         List<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
-        then(annotations.stream().map(Objects::toString)
-            .map(string -> string.replace("(value=", "("))) // JDK 8 behaves differently
-            .containsOnly(
-                "@" + SomeAnnotation.class.getName() + "(\"some-reflection-class\")",
-                "@" + RepeatableAnnotation.class.getName() + "(1)",
-                "@" + RepeatableAnnotation.class.getName() + "(2)");
+        then(annotations.stream().map(Objects::toString)).containsOnly(
+            "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\")",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
     }
 
     @Test void shouldGetSingleFieldAnnotation() {
@@ -85,7 +82,7 @@ public class ReflectionBehavior {
 
         then(throwable)
             .isInstanceOf(AmbiguousAnnotationResolutionException.class)
-            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on " + SomeReflectionClass.class
+            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
                 + ". You should query it with `all` not `get`.");
     }
 

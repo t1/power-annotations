@@ -5,57 +5,50 @@ import com.github.t1.annotations.AnnotationsLoader;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 import java.util.List;
 import java.util.Optional;
 
-public class JandexAnnotationsLoader extends AnnotationsLoader {
-    public static AnnotationsLoader of(Index index, AnnotationsLoader delegate) {
-        if (index == null)
-            return delegate;
-        return new JandexAnnotationsLoader(index, delegate);
-    }
+import static com.github.t1.annotations.impl.AnnotationsLoaderImpl.JANDEX;
 
-    private final Index index;
+class JandexAnnotationsLoader extends AnnotationsLoader {
     private final AnnotationsLoader delegate;
 
-    private JandexAnnotationsLoader(Index index, AnnotationsLoader delegate) {
-        this.index = index;
+    JandexAnnotationsLoader(AnnotationsLoader delegate) {
         this.delegate = delegate;
     }
 
-    public Annotations onType(Class<?> type) {
+    @Override public Annotations onType(Class<?> type) {
         ClassInfo classInfo = info(type);
         if (classInfo == null)
             return delegate.onType(type);
-        return new JandexAnnotations(index, classInfo.classAnnotations());
+        return new JandexAnnotations(classInfo.classAnnotations());
     }
 
-    public Annotations onField(Class<?> type, String fieldName) {
+    @Override public Annotations onField(Class<?> type, String fieldName) {
         ClassInfo classInfo = info(type);
         if (classInfo == null)
             return delegate.onField(type, fieldName);
         FieldInfo field = classInfo.field(fieldName);
         if (field == null)
             throw new FieldNotFoundException(fieldName, type);
-        return new JandexAnnotations(index, field.annotations());
+        return new JandexAnnotations(field.annotations());
     }
 
-    public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
+    @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
         ClassInfo classInfo = info(type);
         if (classInfo == null)
             return delegate.onMethod(type, methodName, argTypes);
         return findMethod(classInfo, methodName, argTypes)
-            .map(method -> new JandexAnnotations(index, method.annotations()))
+            .map(method -> new JandexAnnotations(method.annotations()))
             .orElseThrow(() -> new MethodNotFoundException(methodName, argTypes, type));
     }
 
     private ClassInfo info(Class<?> type) {
         DotName name = DotName.createSimple(type.getName());
-        return index.getClassByName(name);
+        return JANDEX.getClassByName(name);
     }
 
     static Optional<MethodInfo> findMethod(ClassInfo classInfo, String methodName, Class<?>... argTypes) {

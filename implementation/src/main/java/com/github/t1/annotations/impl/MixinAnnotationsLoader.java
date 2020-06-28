@@ -6,7 +6,6 @@ import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.MixinFor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
@@ -17,24 +16,16 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.github.t1.annotations.impl.CollectionUtils.toOptionalOrThrow;
+import static com.github.t1.annotations.impl.AnnotationsLoaderImpl.JANDEX;
 import static com.github.t1.annotations.impl.JandexAnnotations.proxy;
 import static com.github.t1.annotations.impl.JandexAnnotationsLoader.findMethod;
 import static java.util.stream.Collectors.toList;
 
-public class MixinAnnotationsLoader extends AnnotationsLoader {
+class MixinAnnotationsLoader extends AnnotationsLoader {
 
-    public static AnnotationsLoader of(Index index, AnnotationsLoader delegate) {
-        if (index == null)
-            return delegate;
-        return new MixinAnnotationsLoader(index, delegate);
-    }
-
-    private final Index index;
     private final AnnotationsLoader delegate;
 
-    private MixinAnnotationsLoader(Index index, AnnotationsLoader delegate) {
-        this.index = index;
+    MixinAnnotationsLoader(AnnotationsLoader delegate) {
         this.delegate = delegate;
     }
 
@@ -69,9 +60,11 @@ public class MixinAnnotationsLoader extends AnnotationsLoader {
     }
 
     private Stream<AnnotationInstance> mixinsFor(Class<?> type) {
-        return index.getAnnotations(MIXIN_FOR).stream()
+        return JANDEX.getAnnotations(MIXIN_FOR).stream()
             .filter(mixin -> matches(mixin, type));
     }
+
+    private static final DotName MIXIN_FOR = DotName.createSimple(MixinFor.class.getName());
 
     private boolean matches(AnnotationInstance mixin, Class<?> type) {
         return mixin.value().asClass().name().toString().equals(type.getName());
@@ -82,7 +75,7 @@ public class MixinAnnotationsLoader extends AnnotationsLoader {
         private final Function<DotName, AnnotationInstance> get;
         private final Annotations delegate;
 
-        public MixinAnnotations(Supplier<Collection<AnnotationInstance>> all,
+        MixinAnnotations(Supplier<Collection<AnnotationInstance>> all,
                                 Function<DotName, AnnotationInstance> get,
                                 Annotations delegate) {
             this.all = all;
@@ -116,34 +109,6 @@ public class MixinAnnotationsLoader extends AnnotationsLoader {
                     .map(JandexAnnotations::proxy)
                     .map(type::cast),
                 delegate.all(type));
-        }
-    }
-
-    private static final DotName MIXIN_FOR = DotName.createSimple(MixinFor.class.getName());
-
-    private static class MergedAnnotations implements Annotations {
-        private final List<Annotations> candidates;
-
-        public MergedAnnotations(List<Annotations> candidates) { this.candidates = candidates; }
-
-        @Override public List<Annotation> all() {
-            return candidates.stream()
-                .flatMap(annotations -> annotations.all().stream())
-                .collect(toList());
-        }
-
-        @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
-            return candidates.stream()
-                .map(annotations -> annotations.get(type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toOptionalOrThrow(list -> new AmbiguousAnnotationResolutionException("The annotation " + type.getName()
-                    + " is ambiguous on " + ". You should query it with `all` not `get`.") // TODO target info
-                ));
-        }
-
-        @Override public <T extends Annotation> Stream<T> all(Class<T> type) {
-            return candidates.stream().flatMap(annotations -> annotations.all(type));
         }
     }
 }

@@ -3,13 +3,10 @@ package test.jandexed;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
 import org.assertj.core.api.ObjectAssert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import test.plain.SomeReflectionClass;
 
 import java.io.FileInputStream;
-import java.lang.reflect.Proxy;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -20,8 +17,8 @@ public class JandexBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
 
     @Nested class FailingLoad {
-        @Test void shouldNotLoadUnknownIndexResource() {
-            AnnotationsLoaderImpl loader = new AnnotationsLoaderImpl("unknown-index-file");
+        @Test void shouldSilentlySkipUnknownIndexResource() {
+            AnnotationsLoaderImpl loader = new AnnotationsLoaderImpl();
 
             then(loader).isNotNull();
         }
@@ -29,108 +26,10 @@ public class JandexBehavior {
         @Test void shouldFailToLoadInvalidIndexInputStream() throws Exception {
             FileInputStream inputStream = new FileInputStream("pom.xml");
 
-            Throwable throwable = catchThrowable(() -> new AnnotationsLoaderImpl(inputStream));
+            Throwable throwable = catchThrowable(() -> buildAnnotationsLoader(inputStream));
 
-            then(throwable).isInstanceOf(RuntimeException.class)
-                .hasMessage("can't read Jandex input stream")
-                .hasCauseInstanceOf(IllegalArgumentException.class)
-                .hasRootCauseMessage("Not a jandex index");
-        }
-    }
-
-
-    @Nested class ReflectionFallback {
-        @Test void shouldGetFallbackClassAnnotation() {
-            Annotations annotations = TheAnnotations.onType(SomeReflectionClass.class);
-
-            Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
-
-            thenIsSomeAnnotation(annotation, "some-reflection-class")
-                .isSameAs(SomeReflectionClass.class.getAnnotation(SomeAnnotation.class));
-        }
-
-        @Test void shouldGetFallbackFieldAnnotation() throws NoSuchFieldException {
-            Annotations annotations = TheAnnotations.onField(SomeReflectionClass.class, "bar");
-
-            Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
-
-            thenIsSomeAnnotation(annotation, "some-reflection-field")
-                .isSameAs(SomeReflectionClass.class.getDeclaredField("bar").getAnnotation(SomeAnnotation.class));
-        }
-
-        @Test void shouldGetFallbackMethodAnnotation() throws NoSuchMethodException {
-            Annotations annotations = TheAnnotations.onMethod(SomeReflectionClass.class, "foo", String.class);
-
-            Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
-
-            thenIsSomeAnnotation(annotation, "some-reflection-method")
-                .isSameAs(SomeReflectionClass.class.getDeclaredMethod("foo", String.class).getAnnotation(SomeAnnotation.class));
-        }
-    }
-
-
-    @Nested class WithoutReflectionFallback {
-        @BeforeEach void setUp() {
-            TheAnnotations.withoutReflection();
-        }
-
-        @Test void shouldGetNoClassAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = TheAnnotations.onType(SomeReflectionClass.class);
-
-            thenEmpty(annotations);
-        }
-
-        @Test void shouldGetNoFieldAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = TheAnnotations.onField(SomeReflectionClass.class, "bar");
-
-            thenEmpty(annotations);
-        }
-
-        @Test void shouldGetNoMethodAnnotationsWithoutIndexAndDisabledReflection() {
-            Annotations annotations = TheAnnotations.onMethod(SomeReflectionClass.class, "foo", String.class);
-
-            thenEmpty(annotations);
-        }
-
-
-        @Nested class ObjectMethodsOnAnnotationProxy {
-            @SomeAnnotation("nested-class")
-            class SomeClass {}
-
-            private SomeAnnotation someAnnotation;
-
-            @BeforeEach
-            void setUp() {
-                this.someAnnotation = TheAnnotations.onType(SomeClass.class).get(SomeAnnotation.class)
-                    .orElseThrow(() -> new IllegalStateException("unreachable"));
-                assert Proxy.isProxyClass(someAnnotation.getClass());
-            }
-
-            @Test void shouldCallToStringOnAnnotationProxy() {
-                String toString = someAnnotation.toString();
-
-                then(toString.replace(" ", "")).isEqualTo("@test.jandexed.SomeAnnotation(value=\"nested-class\")");
-            }
-
-            @Test void annotationProxyShouldBeEqualToSelf() {
-                @SuppressWarnings("EqualsWithItself")
-                boolean equal = someAnnotation.equals(someAnnotation);
-
-                //noinspection ConstantConditions
-                then(equal).isTrue();
-            }
-
-            @Test void annotationProxyShouldNotBeEqualToReflection() {
-                boolean equals = someAnnotation.equals(SomeClass.class.getAnnotation(SomeAnnotation.class));
-
-                then(equals).isFalse();
-            }
-
-            @Test void shouldFailToCallHashCodeOnAnnotationProxy() {
-                int hashCode = someAnnotation.hashCode();
-
-                then(hashCode).isEqualTo(someAnnotation.toString().hashCode());
-            }
+            then(throwable).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Not a jandex index");
         }
     }
 
@@ -307,7 +206,9 @@ public class JandexBehavior {
         then(annotations.get(SomeAnnotation.class)).isEmpty();
     }
 
-    ObjectAssert<SomeAnnotation> thenIsSomeAnnotation(Optional<SomeAnnotation> annotation, String expectedValue) {
+    ObjectAssert<SomeAnnotation> thenIsSomeAnnotation(
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<SomeAnnotation> annotation,
+        String expectedValue) {
         assert annotation.isPresent();
         SomeAnnotation someAnnotation = annotation.get();
         then(someAnnotation.annotationType()).isEqualTo(SomeAnnotation.class);
