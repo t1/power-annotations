@@ -1,7 +1,6 @@
 package com.github.t1.quarkus;
 
-import com.github.t1.annotations.Stereotype;
-
+import javax.enterprise.inject.Stereotype;
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
