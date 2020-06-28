@@ -14,6 +14,7 @@
         <module>api</module>
         <module>implementation</module>
         <module>tck</module>
+        <module>demo</module>
     </modules>
 
     <properties>
