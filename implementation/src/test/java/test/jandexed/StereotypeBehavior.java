@@ -77,11 +77,13 @@ public class StereotypeBehavior {
             Stream<RepeatableAnnotation> someAnnotation = annotations.all(RepeatableAnnotation.class);
 
             then(someAnnotation.map(Objects::toString)).containsExactly(
-                // TODO "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                // TODO "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 5)"
+                "@" + RepeatableAnnotation.class.getName() + "(value = 5)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)"
             );
         }
+
+        // TODO test indirect stereotypes
 
         @Test void shouldNotReplaceExistingClassAnnotation() {
             @SomeStereotype
@@ -124,9 +126,11 @@ public class StereotypeBehavior {
             Stream<RepeatableAnnotation> repeatableAnnotations = annotations.all(RepeatableAnnotation.class);
 
             then(repeatableAnnotations.map(Objects::toString)).containsExactly(
-                // TODO "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                // TODO "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 6)"
+                "@" + RepeatableAnnotation.class.getName() + "(value = 6)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 3)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 4)"
             );
         }
 

@@ -1,6 +1,5 @@
 package com.github.t1.annotations.impl;
 
-import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 
 import java.lang.annotation.Annotation;
@@ -8,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.github.t1.annotations.impl.CollectionUtils.toOptionalOrThrow;
+import static com.github.t1.annotations.impl.Utils.toOptionalOrThrow;
 import static java.util.stream.Collectors.toList;
 
 class MergedAnnotations implements Annotations {
@@ -27,9 +26,7 @@ class MergedAnnotations implements Annotations {
             .map(annotations -> annotations.get(type))
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .collect(toOptionalOrThrow(list -> new AmbiguousAnnotationResolutionException("The annotation " + type.getName()
-                + " is ambiguous on " + ". You should query it with `all` not `get`.") // TODO target info
-            ));
+            .collect(toOptionalOrThrow(list -> new PowerAnnotationsImplAmbiguousAnnotationResolutionException(type)));
     }
 
     @Override public <T extends Annotation> Stream<T> all(Class<T> type) {

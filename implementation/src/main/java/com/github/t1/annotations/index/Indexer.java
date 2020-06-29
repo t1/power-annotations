@@ -1,8 +1,7 @@
-package com.github.t1.annotations.impl;
+package com.github.t1.annotations.index;
 
 import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Indexer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,14 +18,13 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.github.t1.annotations.impl.AnnotationProxy.getClassLoader;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 
-public class Jandexer {
-    private static final Logger LOG = Logger.getLogger(Jandexer.class.getName());
+public class Indexer {
+    private static final Logger LOG = Logger.getLogger(Indexer.class.getName());
 
-    public static IndexView init() {
+    static Index init() {
         try (InputStream inputStream = getClassLoader().getResourceAsStream("META-INF/jandex.idx")) {
             IndexView indexView = initFrom(inputStream);
             if (LOG.isLoggable(Level.FINE)) {
@@ -37,15 +35,20 @@ public class Jandexer {
                 );
                 LOG.fine("------------------------------------------------------------");
             }
-            return indexView;
+            return new Index(indexView);
         } catch (RuntimeException | IOException e) {
             throw new RuntimeException("can't read index file", e);
         }
     }
 
+    private static ClassLoader getClassLoader() {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
+    }
+
     private static IndexView initFrom(InputStream inputStream) {
         if (inputStream == null)
-            return new Jandexer().build();
+            return new Indexer().build();
         try {
             return new IndexReader(inputStream).read();
         } catch (RuntimeException | IOException e) {
@@ -53,7 +56,7 @@ public class Jandexer {
         }
     }
 
-    private final Indexer indexer = new Indexer();
+    private final org.jboss.jandex.Indexer indexer = new org.jboss.jandex.Indexer();
 
     private IndexView build() {
         urls().distinct().forEach(this::index);
@@ -65,7 +68,7 @@ public class Jandexer {
         if (classLoader instanceof URLClassLoader) {
             return Stream.of(((URLClassLoader) classLoader).getURLs());
         } else {
-            return classPath().map(Jandexer::toUrl);
+            return classPath().map(Indexer::toUrl);
         }
     }
 

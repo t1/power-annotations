@@ -54,7 +54,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
@@ -72,7 +72,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Incubating
@@ -107,12 +107,11 @@ public class MixinBehavior {
             then(someAnnotation.get().value()).isEqualTo("replacing");
         }
 
-        @Test void shouldFailToGetRepeatableClassAnnotation() {
-            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+        @Test void shouldGetReplacedRepeatableClassAnnotation() {
+            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
-                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
+            assert repeatableAnnotation.isPresent();
+            then(repeatableAnnotation.get().value()).isEqualTo(1);
         }
 
         @Test void shouldGetAllClassAnnotations() {
@@ -183,7 +182,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
@@ -207,7 +206,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         class TargetFieldClass {
@@ -260,11 +259,10 @@ public class MixinBehavior {
         }
 
         @Test void shouldFailToGetRepeatableFieldAnnotation() {
-            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
-                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
+            assert repeatableAnnotation.isPresent();
+            then(repeatableAnnotation.get().value()).isEqualTo(1);
         }
 
         @Test void shouldGetAllFieldAnnotations() {
@@ -334,7 +332,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
@@ -358,7 +356,7 @@ public class MixinBehavior {
 
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            then(throwable).isExactlyInstanceOf(AmbiguousAnnotationResolutionException.class);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         class TargetMethodClass {
@@ -411,11 +409,10 @@ public class MixinBehavior {
         }
 
         @Test void shouldFailToGetRepeatableMethodAnnotation() {
-            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
+            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class)
-                .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                    + ". You should query it with `all` not `get`."); // the message is an implementation detail
+            assert repeatableAnnotation.isPresent();
+            then(repeatableAnnotation.get().value()).isEqualTo(1);
         }
 
         @Test void shouldGetAllMethodAnnotations() {

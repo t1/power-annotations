@@ -2,29 +2,29 @@ package com.github.t1.annotations.impl;
 
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
-import org.jboss.jandex.IndexView;
+import com.github.t1.annotations.index.Index;
 
 public class AnnotationsLoaderImpl extends AnnotationsLoader {
-    private final IndexView jandex;
+    private final Index index;
     private final AnnotationsLoader loader;
 
     /** Used by the ServiceLoader */
     @SuppressWarnings("unused")
     public AnnotationsLoaderImpl() {
-        this(Jandexer.init());
+        this(Index.load());
     }
 
     /** visible for testing: we need to load different index files */
-    public AnnotationsLoaderImpl(IndexView jandex) {
-        this.jandex = jandex;
+    public AnnotationsLoaderImpl(Index index) {
+        this.index = index;
         this.loader = buildLoader();
     }
 
     private AnnotationsLoader buildLoader() {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
-        stack = new JandexAnnotationsLoader(jandex, stack);
-        stack = new StereotypeLoader(jandex, stack);
-        stack = new MixinAnnotationsLoader(jandex, stack);
+        stack = new DirectAnnotationsLoader(index, stack);
+        stack = new StereotypeLoader(index, stack);
+        stack = new MixinAnnotationsLoader(index, stack);
         return stack;
     }
 

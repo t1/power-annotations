@@ -6,8 +6,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
-class CollectionUtils {
+class Utils {
     /**
      * Collect to an {@link Optional}: if the Stream is empty return an empty Optional.
      * If it contains one element, return an Optional with that element. If the stream
@@ -31,5 +32,15 @@ class CollectionUtils {
                         throw throwableSupplier.apply(list);
                 }
             });
+    }
+
+    /** Like JDK 9 <code>Optional::stream</code> */
+    static <T> Stream<T> toStream(Optional<T> optional) {
+        return optional.map(Stream::of).orElseGet(Stream::empty);
+    }
+
+    /** Like JDK 9 <code>Optional::or</code> */
+    static <T> Optional<T> or(Optional<T> optional, Supplier<Optional<T>> alternative) {
+        return optional.isPresent() ? optional : alternative.get();
     }
 }

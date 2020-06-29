@@ -1,7 +1,7 @@
 package test.jandexed;
 
 import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
-import org.jboss.jandex.Index;
+import com.github.t1.annotations.index.Index;
 import org.jboss.jandex.IndexReader;
 
 import java.io.FileInputStream;
@@ -18,7 +18,7 @@ public class TestTools {
     }
 
     public static AnnotationsLoaderImpl buildAnnotationsLoader(InputStream inputStream) throws IOException {
-        Index index = new IndexReader(inputStream).read();
+        Index index = new Index(new IndexReader(inputStream).read());
         return new AnnotationsLoaderImpl(index);
     }
 }

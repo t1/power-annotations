@@ -84,8 +84,8 @@ public class DynamicJandexBehavior {
 
         then(throwable)
             .isInstanceOf(AmbiguousAnnotationResolutionException.class)
-            .hasMessage("The annotation " + RepeatableAnnotation.class.getName() + " is ambiguous on "
-                + ". You should query it with `all` not `get`."); // the message is an implementation detail
+            // TODO message detail about the target .hasMessageContaining(SomeReflectionClass.class.getName())
+            .hasMessageContaining(RepeatableAnnotation.class.getName());
     }
 
     @Test void shouldGetTypedAll() {
