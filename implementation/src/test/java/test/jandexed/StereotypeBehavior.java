@@ -6,7 +6,6 @@ import com.github.t1.annotations.Stereotype;
 import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import test.jandexed.RepeatableAnnotation.RepeatableAnnotations;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -61,11 +60,8 @@ public class StereotypeBehavior {
                 "@" + SomeStereotype.class.getName(),
                 "@" + Stereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\")",
-                // TODO resolve repeatable annotations
-                "@" + RepeatableAnnotations.class.getName() + "(value = [" +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 1)," +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 2)" +
-                    "])",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
                 "@" + Retention.class.getName() + "(value = RUNTIME)");
         }
 
@@ -143,19 +139,13 @@ public class StereotypeBehavior {
                 "@" + AnotherStereotype.class.getName(),
                 "@" + Stereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\")",
-                // TODO resolve repeatable annotations
-                "@" + RepeatableAnnotations.class.getName() + "(value = [" +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 1)," +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 2)" +
-                    "])",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
                 "@" + Retention.class.getName() + "(value = RUNTIME)",
                 "@" + Stereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"another-stereotype\")",
-                // TODO resolve repeatable annotations
-                "@" + RepeatableAnnotations.class.getName() + "(value = [" +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 3)," +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 4)" +
-                    "])",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 3)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 4)",
                 "@" + Retention.class.getName() + "(value = RUNTIME)"
             );
         }
@@ -188,11 +178,8 @@ public class StereotypeBehavior {
                 "@" + SomeStereotype.class.getName(),
                 "@" + Stereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\")",
-                // TODO resolve repeatable annotations
-                "@" + RepeatableAnnotations.class.getName() + "(value = [" +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 1)," +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 2)" +
-                    "])",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
                 "@" + Retention.class.getName() + "(value = RUNTIME)");
         }
 
@@ -231,11 +218,8 @@ public class StereotypeBehavior {
                 "@" + SomeStereotype.class.getName(),
                 "@" + Stereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\")",
-                // TODO resolve repeatable annotations
-                "@" + RepeatableAnnotations.class.getName() + "(value = [" +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 1)," +
-                    "@" + RepeatableAnnotation.class.getSimpleName() + "(value = 2)" +
-                    "])",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
                 "@" + Retention.class.getName() + "(value = RUNTIME)");
         }
 

@@ -25,7 +25,7 @@ class JandexAnnotationsLoader extends AnnotationsLoader {
         ClassInfo classInfo = info(type);
         if (classInfo == null)
             return delegate.onType(type);
-        return new JandexAnnotations(classInfo.classAnnotations());
+        return new JandexAnnotations(jandex, classInfo.classAnnotations());
     }
 
     @Override public Annotations onField(Class<?> type, String fieldName) {
@@ -35,7 +35,7 @@ class JandexAnnotationsLoader extends AnnotationsLoader {
         FieldInfo field = classInfo.field(fieldName);
         if (field == null)
             throw new FieldNotFoundException(fieldName, type);
-        return new JandexAnnotations(field.annotations());
+        return new JandexAnnotations(jandex, field.annotations());
     }
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
@@ -43,7 +43,7 @@ class JandexAnnotationsLoader extends AnnotationsLoader {
         if (classInfo == null)
             return delegate.onMethod(type, methodName, argTypes);
         return findMethod(classInfo, methodName, argTypes)
-            .map(method -> new JandexAnnotations(method.annotations()))
+            .map(method -> new JandexAnnotations(jandex, method.annotations()))
             .orElseThrow(() -> new MethodNotFoundException(methodName, argTypes, type));
     }
 

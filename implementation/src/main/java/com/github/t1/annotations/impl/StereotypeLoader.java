@@ -25,10 +25,12 @@ import static java.util.stream.Collectors.toList;
 class StereotypeLoader extends AnnotationsLoader {
     private final IndexView jandex;
     private final AnnotationsLoader loader;
+    private final RepeatableResolver repeatableResolver;
 
     StereotypeLoader(IndexView jandex, AnnotationsLoader loader) {
         this.jandex = jandex;
         this.loader = loader;
+        this.repeatableResolver = new RepeatableResolver(jandex);
     }
 
     @Override public Annotations onType(Class<?> type) {
@@ -70,6 +72,7 @@ class StereotypeLoader extends AnnotationsLoader {
                 other.all().stream(),
                 annotationsFromStereotypes()
                     .flatMap(classInfo -> classInfo.classAnnotations().stream())
+                    .flatMap(repeatableResolver::resolve)
                     .map(JandexAnnotations::proxy))
                 .collect(toList());
         }
@@ -92,6 +95,7 @@ class StereotypeLoader extends AnnotationsLoader {
         private <T extends Annotation> Stream<T> annotationsFromStereotypes(Class<T> type) {
             return annotationsFromStereotypes()
                 .flatMap(classInfo -> annotations(type, classInfo))
+                .flatMap(repeatableResolver::resolve)
                 .map(JandexAnnotations::proxy)
                 .map(type::cast);
         }

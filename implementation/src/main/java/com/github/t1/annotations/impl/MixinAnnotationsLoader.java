@@ -5,11 +5,11 @@ import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.MixinFor;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Repeatable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import static com.github.t1.annotations.impl.JandexAnnotations.proxy;
 import static com.github.t1.annotations.impl.JandexAnnotationsLoader.findMethod;
+import static com.github.t1.annotations.impl.RepeatableResolver.isRepeatable;
 import static java.util.stream.Collectors.toList;
 
 class MixinAnnotationsLoader extends AnnotationsLoader {
@@ -72,7 +73,7 @@ class MixinAnnotationsLoader extends AnnotationsLoader {
         return mixin.value().asClass().name().toString().equals(type.getName());
     }
 
-    private static class MixinAnnotations implements Annotations {
+    private class MixinAnnotations implements Annotations {
         private final Supplier<Collection<AnnotationInstance>> all;
         private final Function<DotName, AnnotationInstance> get;
         private final Annotations other;
@@ -93,10 +94,12 @@ class MixinAnnotationsLoader extends AnnotationsLoader {
         }
 
         @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
-            if (type.isAnnotationPresent(Repeatable.class)) // TODO use Jandex instead
+            DotName typeName = DotName.createSimple(type.getName());
+            ClassInfo typeInfo = jandex.getClassByName(typeName);
+            if (typeInfo != null && isRepeatable(typeInfo))
                 throw new AmbiguousAnnotationResolutionException("The annotation " + type.getName()
                     + " is ambiguous on " + ". You should query it with `all` not `get`."); // TODO target info
-            AnnotationInstance targetAnnotation = get.apply(DotName.createSimple(type.getName()));
+            AnnotationInstance targetAnnotation = get.apply(typeName);
             if (targetAnnotation == null)
                 return other.get(type);
             @SuppressWarnings("unchecked")

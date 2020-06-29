@@ -22,9 +22,9 @@ class AnnotationProxy {
         return loadClass(abstractAnnotation.getTypeName());
     }
 
-    static Class<?> loadClass(String typeName) {
+    private static Class<?> loadClass(String typeName) {
         try {
-            return getClassLoader().loadClass(typeName); // TODO implement with Jandex
+            return getClassLoader().loadClass(typeName);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("can't load annotation type " + typeName, e);
         }
