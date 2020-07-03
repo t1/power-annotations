@@ -55,12 +55,13 @@ public class AnnotationInstance {
             .map(classInfo -> new ClassInfo(index, classInfo));
     }
 
-    public AnnotationValue value() {
-        return delegate.value();
-    }
-
     public AnnotationValue value(String name) {
-        return delegate.value(name);
+        AnnotationValue value = delegate.value(name);
+        if (value == null)
+            return type().orElseThrow(() -> new RuntimeException("annotation not indexed: " + this))
+                .method(name).orElseThrow(() -> new RuntimeException("no value '" + name + "' in " + this))
+                .defaultValue();
+        return value;
     }
 
     public String name() {

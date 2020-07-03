@@ -1,7 +1,9 @@
 package test.jandexed;
 
+import com.github.t1.annotations.index.Indexer;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
+import org.jboss.jandex.IndexView;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -12,19 +14,26 @@ import java.nio.file.Paths;
 import static java.nio.file.Files.newInputStream;
 
 public class JandexPrinter {
+
     public static void main(String[] args) {
-        new JandexPrinter(Paths.get("implementation/target/test-classes/test/jandexed/META-INF/jandex.idx")).run();
+        JandexPrinter printer = (args.length > 0 && "--classpath".equals(args[0]))
+            ? new JandexPrinter(new Indexer().build())
+            : new JandexPrinter(Paths.get("implementation/target/test-classes/test/jandexed/META-INF/jandex.idx"));
+        printer.run();
     }
 
-    private final Path indexFile;
-    private final Index index;
+    private final IndexView index;
 
     public JandexPrinter(Path indexFile) {
-        this.indexFile = indexFile;
-        this.index = load(indexFile);
+        this(load(indexFile));
     }
 
-    private Index load(Path indexFile) {
+    public JandexPrinter(IndexView index) {
+        this.index = index;
+    }
+
+    private static IndexView load(Path indexFile) {
+        System.out.println("load from " + indexFile);
         try (InputStream inputStream = new BufferedInputStream(newInputStream(indexFile))) {
             return new IndexReader(inputStream).read();
         } catch (IOException e) {
@@ -33,11 +42,19 @@ public class JandexPrinter {
     }
 
     private void run() {
-        System.out.println("| " + indexFile);
         System.out.println("------------------------------------------------------------");
-        index.printAnnotations();
+        ((Index) index).printAnnotations();
         System.out.println("------------------------------------------------------------");
-        index.printSubclasses();
+        ((Index) index).printSubclasses();
+        System.out.println("------------------------------------------------------------");
+        index.getKnownClasses().forEach(classInfo -> {
+            if (!classInfo.name().toString().startsWith("test."))
+                return;
+            System.out.println(classInfo.name() + ":");
+            classInfo.methods().forEach(method ->
+                System.out.println("    " + method.name() + " [" + method.defaultValue() + "]")
+            );
+        });
         System.out.println("------------------------------------------------------------");
     }
 }

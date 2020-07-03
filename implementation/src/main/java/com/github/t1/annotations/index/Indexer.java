@@ -58,7 +58,7 @@ public class Indexer {
 
     private final org.jboss.jandex.Indexer indexer = new org.jboss.jandex.Indexer();
 
-    private IndexView build() {
+    public IndexView build() {
         urls().distinct().forEach(this::index);
         return indexer.complete();
     }

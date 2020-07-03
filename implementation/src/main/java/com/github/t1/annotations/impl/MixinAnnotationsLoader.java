@@ -66,7 +66,7 @@ class MixinAnnotationsLoader extends AnnotationsLoader {
     }
 
     private boolean matches(AnnotationInstance mixin, Class<?> type) {
-        return mixin.value().asClass().name().toString().equals(type.getName());
+        return mixin.value("value").asClass().name().toString().equals(type.getName());
     }
 
     private static class MixinAnnotations implements Annotations {

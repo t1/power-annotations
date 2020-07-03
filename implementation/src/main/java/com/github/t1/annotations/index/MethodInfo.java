@@ -1,5 +1,6 @@
 package com.github.t1.annotations.index;
 
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 
 import java.util.List;
@@ -38,5 +39,9 @@ public class MethodInfo {
         DotName dotName = DotName.createSimple(name);
         return streamOfNullable(delegate.annotation(dotName))
             .flatMap(instance -> AnnotationInstance.resolveRepeatables(index, instance));
+    }
+
+    public AnnotationValue defaultValue() {
+        return delegate.defaultValue();
     }
 }

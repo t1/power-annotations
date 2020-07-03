@@ -36,6 +36,7 @@ public class JandexBehavior {
 
 
     @SomeAnnotation("nested-interface")
+    @SomeAnnotationWithDefaultValue
     interface SomeInterface {
         @SomeAnnotation("nested-interface-method")
         void foo(String x);
@@ -68,6 +69,18 @@ public class JandexBehavior {
             Annotations annotations = TheAnnotations.onType(SomeClass.class);
 
             thenEmpty(annotations);
+        }
+
+        @Test void shouldGetDefaultValueOfClassAnnotation() {
+            Annotations annotations = TheAnnotations.onType(SomeInterface.class);
+
+            Optional<SomeAnnotationWithDefaultValue> annotation = annotations.get(SomeAnnotationWithDefaultValue.class);
+
+            assert annotation.isPresent();
+            SomeAnnotationWithDefaultValue someAnnotation = annotation.get();
+            then(someAnnotation.annotationType()).isEqualTo(SomeAnnotationWithDefaultValue.class);
+            then(someAnnotation.valueWithDefault()).isEqualTo("default-value");
+            then(someAnnotation).isNotSameAs(SomeInterface.class.getAnnotation(SomeAnnotation.class));
         }
     }
 
