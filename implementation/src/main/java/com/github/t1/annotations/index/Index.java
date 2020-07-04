@@ -3,7 +3,6 @@ package com.github.t1.annotations.index;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
@@ -17,10 +16,9 @@ public class Index {
     /** visible for testing: we need to load different index files */
     public Index(IndexView jandex) { this.jandex = requireNonNull(jandex); }
 
-    public Optional<ClassInfo> classInfo(Class<?> type) {
+    public ClassInfo classInfo(Class<?> type) {
         DotName name = DotName.createSimple(type.getName());
-        return Optional.ofNullable(jandex.getClassByName(name))
-            .map(classInfo -> new ClassInfo(this, classInfo));
+        return new ClassInfo(this, name);
     }
 
     public Stream<AnnotationInstance> annotations(Class<?> type) {

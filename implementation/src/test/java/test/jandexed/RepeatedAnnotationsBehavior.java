@@ -50,8 +50,8 @@ public class RepeatedAnnotationsBehavior {
         List<Annotation> all = TheAnnotations.onType(SomeClass.class).all();
 
         then(all.stream().map(Object::toString)).containsExactly(
-            "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+            "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeClass.class.getName(),
+            "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClass.class.getName());
     }
 
     @Test void shouldGetTypedAll() {

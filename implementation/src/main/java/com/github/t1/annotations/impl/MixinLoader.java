@@ -18,12 +18,12 @@ import static com.github.t1.annotations.impl.Utils.toOptionalOrThrow;
 import static com.github.t1.annotations.impl.Utils.toStream;
 import static java.util.stream.Collectors.toList;
 
-class MixinAnnotationsLoader extends AnnotationsLoader {
+class MixinLoader extends AnnotationsLoader {
 
     private final Index index;
     private final AnnotationsLoader delegate;
 
-    MixinAnnotationsLoader(Index index, AnnotationsLoader delegate) {
+    MixinLoader(Index index, AnnotationsLoader delegate) {
         this.index = index;
         this.delegate = delegate;
     }
@@ -52,7 +52,7 @@ class MixinAnnotationsLoader extends AnnotationsLoader {
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
         List<Annotations> candidates = mixinsFor(type)
             .map(AnnotationInstance::targetClass)
-            .flatMap(classInfo -> toStream(classInfo.findMethod(methodName, argTypes)))
+            .flatMap(classInfo -> toStream(classInfo.method(methodName, argTypes)))
             .map(methodInfo -> (Annotations) new MixinAnnotations(
                 methodInfo::annotations, methodInfo::annotations, delegate.onMethod(type, methodName, argTypes)))
             .collect(toList());
@@ -62,11 +62,11 @@ class MixinAnnotationsLoader extends AnnotationsLoader {
 
     private Stream<AnnotationInstance> mixinsFor(Class<?> type) {
         return index.annotations(MixinFor.class)
-            .filter(mixin -> matches(mixin, type));
+            .filter(mixin -> isMixinFor(mixin, type));
     }
 
-    private boolean matches(AnnotationInstance mixin, Class<?> type) {
-        return mixin.value("value").asClass().name().toString().equals(type.getName());
+    private boolean isMixinFor(AnnotationInstance mixin, Class<?> type) {
+        return mixin.value("value").classValue().getName().equals(type.getName());
     }
 
     private static class MixinAnnotations implements Annotations {

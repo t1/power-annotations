@@ -34,9 +34,9 @@ public class DynamicJandexBehavior {
         List<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
         then(annotations.stream().map(Objects::toString)).containsOnly(
-            "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\")",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+            "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\") on " + SomeReflectionClass.class.getName(),
+            "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeReflectionClass.class.getName(),
+            "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeReflectionClass.class.getName());
     }
 
     @Test void shouldGetSingleFieldAnnotation() {

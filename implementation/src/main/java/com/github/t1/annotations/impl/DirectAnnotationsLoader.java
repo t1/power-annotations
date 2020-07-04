@@ -3,6 +3,7 @@ package com.github.t1.annotations.impl;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.index.AnnotationInstance;
+import com.github.t1.annotations.index.ClassInfo;
 import com.github.t1.annotations.index.Index;
 
 import java.lang.annotation.Annotation;
@@ -16,33 +17,28 @@ import static java.util.stream.Collectors.toList;
 
 class DirectAnnotationsLoader extends AnnotationsLoader {
     private final Index index;
-    private final AnnotationsLoader delegate;
+    private final AnnotationsLoader other;
 
-    DirectAnnotationsLoader(Index index, AnnotationsLoader delegate) {
+    DirectAnnotationsLoader(Index index, AnnotationsLoader other) {
         this.index = index;
-        this.delegate = delegate;
+        this.other = other;
     }
 
     @Override public Annotations onType(Class<?> type) {
-        return index.classInfo(type)
-            .map(classInfo -> (Annotations) new DirectAnnotations(classInfo::annotations))
-            .orElseGet(() -> delegate.onType(type));
+        ClassInfo classInfo = index.classInfo(type);
+        return new DirectAnnotations(classInfo::annotations);
     }
 
     @Override public Annotations onField(Class<?> type, String fieldName) {
-        return index.classInfo(type)
-            .map(classInfo -> classInfo.field(fieldName)
-                .map(field -> (Annotations) new DirectAnnotations(field::annotations))
-                .orElseThrow(() -> new FieldNotFoundException(fieldName, type)))
-            .orElseGet(() -> delegate.onField(type, fieldName));
+        return index.classInfo(type).field(fieldName)
+            .map(field -> (Annotations) new DirectAnnotations(field::annotations))
+            .orElseThrow(() -> new FieldNotFoundException(fieldName, type));
     }
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
-        return index.classInfo(type)
-            .map(classInfo -> classInfo.findMethod(methodName, argTypes)
-                .map(method -> (Annotations) new DirectAnnotations(method::annotations))
-                .orElseThrow(() -> new MethodNotFoundException(methodName, argTypes, type)))
-            .orElseGet(() -> delegate.onMethod(type, methodName, argTypes));
+        return index.classInfo(type).method(methodName, argTypes)
+            .map(method -> (Annotations) new DirectAnnotations(method::annotations))
+            .orElseThrow(() -> new MethodNotFoundException(methodName, argTypes, type));
     }
 
     private static class DirectAnnotations implements Annotations {

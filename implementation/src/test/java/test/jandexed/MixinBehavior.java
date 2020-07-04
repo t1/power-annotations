@@ -7,6 +7,7 @@ import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Incubating;
+import org.mockito.NotExtensible;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -81,6 +82,7 @@ public class MixinBehavior {
         class TargetClass {}
 
         @MixinFor(TargetClass.class)
+        @SuppressWarnings("DeprecatedIsStillUsed")
         @Deprecated
         @SomeAnnotation("replacing")
         @RepeatableAnnotation(1)
@@ -118,21 +120,72 @@ public class MixinBehavior {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
-                "@" + Deprecated.class.getName(),
-                "@" + MixinFor.class.getName() + "(value = " + TargetClass.class.getName() + ")",
-                "@" + Incubating.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\")",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName(),
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinClass.class.getName(),
+                "@" + Deprecated.class.getName() + " on " + MixinClass.class.getName(),
+                "@" + MixinFor.class.getName() + "(value = " + TargetClass.class.getName() + ") on " + MixinClass.class.getName(),
+                "@" + Incubating.class.getName() + " on " + TargetClass.class.getName(),
+                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + TargetClass.class.getName(),
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetClass.class.getName());
         }
 
         @Test void shouldGetAllRepeatableClassAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName(),
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetClass.class.getName());
+        }
+
+
+        @NotExtensible
+        public class NotExtensibleTarget {}
+
+        @MixinFor(NotExtensible.class)
+        @SomeAnnotation("annotation-mixin")
+        public class NotExtensibleMixin {}
+
+        @Test void shouldGetMixedInAnnotation() {
+            Annotations annotations = TheAnnotations.onType(NotExtensibleTarget.class);
+
+            Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
+
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("annotation-mixin");
+        }
+
+        @Test void shouldGetAllRepeatedMixedInAnnotation() {
+            Annotations annotations = TheAnnotations.onType(NotExtensibleTarget.class);
+
+            Stream<SomeAnnotation> someAnnotation = annotations.all(SomeAnnotation.class);
+
+            then(someAnnotation.map(Object::toString)).containsExactly(
+                "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\") on " + NotExtensibleMixin.class.getName());
+        }
+
+        @Test void shouldGetAllMixedInAnnotation() {
+            Annotations annotations = TheAnnotations.onType(NotExtensibleTarget.class);
+
+            List<Annotation> all = annotations.all();
+
+            then(all.stream().map(Object::toString)).containsExactly(
+                "@" + NotExtensible.class.getName() + " on " + NotExtensibleTarget.class.getName(),
+                "@" + MixinFor.class.getName() + "(value = " + NotExtensible.class.getName() + ") " +
+                    "on " + NotExtensibleMixin.class.getName());
+        }
+
+
+        @NotExtensible
+        @SomeAnnotation("original")
+        public class OriginalAnnotatedTarget {}
+
+        @Test void shouldGetOriginalInsteadOfMixedInAnnotation() {
+            Annotations annotations = TheAnnotations.onType(OriginalAnnotatedTarget.class);
+
+            Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
+
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("original");
         }
     }
 
@@ -269,20 +322,20 @@ public class MixinBehavior {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
-                "@" + Deprecated.class.getName(),
-                "@" + Incubating.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\")",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + Deprecated.class.getName() + " on " + MixinClass.class.getName() + ".foo",
+                "@" + Incubating.class.getName() + " on " + TargetFieldClass.class.getName() + ".foo",
+                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + TargetFieldClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName() + ".foo",
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetFieldClass.class.getName() + ".foo");
         }
 
         @Test void shouldGetAllRepeatableFieldAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetFieldClass.class.getName() + ".foo");
         }
     }
 
@@ -419,20 +472,20 @@ public class MixinBehavior {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
-                "@" + Deprecated.class.getName(),
-                "@" + Incubating.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\")",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + Deprecated.class.getName() + " on " + MixinClass.class.getName() + ".foo",
+                "@" + Incubating.class.getName() + " on " + TargetMethodClass.class.getName() + ".foo",
+                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + TargetMethodClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName() + ".foo",
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetMethodClass.class.getName() + ".foo");
         }
 
         @Test void shouldGetAllRepeatableMethodAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinClass.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + TargetMethodClass.class.getName() + ".foo");
         }
     }
 }

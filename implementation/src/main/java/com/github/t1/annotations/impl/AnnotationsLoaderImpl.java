@@ -24,7 +24,8 @@ public class AnnotationsLoaderImpl extends AnnotationsLoader {
         AnnotationsLoader stack = new EmptyAnnotationsLoader();
         stack = new DirectAnnotationsLoader(index, stack);
         stack = new StereotypeLoader(index, stack);
-        stack = new MixinAnnotationsLoader(index, stack);
+        stack = new MixinLoader(index, stack);
+        stack = new AnnotationMixinLoader(index, stack);
         return stack;
     }
 
