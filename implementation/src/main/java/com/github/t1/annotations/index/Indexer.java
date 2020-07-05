@@ -19,21 +19,26 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
 import static java.util.stream.Collectors.joining;
 
 public class Indexer {
     private static final Logger LOG = Logger.getLogger(Indexer.class.getName());
+    private static final Level LEVEL = FINE;
+
+    private static void log(String message) { LOG.log(LEVEL, message); }
 
     static Index init() {
         try (InputStream inputStream = getClassLoader().getResourceAsStream("META-INF/jandex.idx")) {
-            IndexView indexView = initFrom(inputStream);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("------------------------------------------------------------");
+            IndexView indexView = (inputStream == null) ? new Indexer().build() : initFrom(inputStream);
+            if (LOG.isLoggable(LEVEL)) {
+                log("------------------------------------------------------------");
                 indexView.getKnownClasses().forEach(classInfo ->
-                    LOG.fine(classInfo.name() + " :: " + classInfo.classAnnotations().stream()
+                    log(classInfo.name() + " :: " + classInfo.classAnnotations().stream()
+                        .filter(instance -> !instance.name().toString().equals("kotlin.Metadata")) // contains binary
                         .map(Object::toString).collect(joining(", ")))
                 );
-                LOG.fine("------------------------------------------------------------");
+                log("------------------------------------------------------------");
             }
             return new Index(indexView);
         } catch (RuntimeException | IOException e) {
@@ -47,8 +52,6 @@ public class Indexer {
     }
 
     private static IndexView initFrom(InputStream inputStream) {
-        if (inputStream == null)
-            return new Indexer().build();
         try {
             return new IndexReader(inputStream).read();
         } catch (RuntimeException | IOException e) {
@@ -86,7 +89,7 @@ public class Indexer {
 
     private void index(URL url) {
         try {
-            LOG.fine("index " + url);
+            log("index " + url);
             if (url.toString().endsWith(".jar") || url.toString().endsWith(".war"))
                 indexZip(url.openStream());
             else
