@@ -12,7 +12,7 @@ import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
-public class ClassInfo {
+public class ClassInfo implements Annotatable {
     private final Index index;
     private final org.jboss.jandex.ClassInfo delegate;
 
@@ -50,18 +50,13 @@ public class ClassInfo {
     @Override public int hashCode() { return delegate.name().hashCode(); }
 
 
-    public String getName() { return delegate.name().toString(); }
+    @Override public String name() { return delegate.name().toString(); }
 
     public String simpleName() { return delegate.simpleName(); }
 
-    public Stream<AnnotationInstance> annotations() {
+    @Override public Stream<AnnotationInstance> annotations() {
         return delegate.classAnnotations().stream()
             .flatMap(instance -> resolveRepeatables(index, instance));
-    }
-
-    public Stream<AnnotationInstance> annotations(String name) {
-        return annotations()
-            .filter(annotationInstance -> annotationInstance.name().equals(name));
     }
 
     public Optional<FieldInfo> field(String fieldName) {

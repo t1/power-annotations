@@ -3,7 +3,9 @@ package com.github.t1.annotations.impl;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.MixinFor;
+import com.github.t1.annotations.index.Annotatable;
 import com.github.t1.annotations.index.AnnotationInstance;
+import com.github.t1.annotations.index.ClassInfo;
 import com.github.t1.annotations.index.Index;
 
 import java.lang.annotation.Annotation;
@@ -29,35 +31,27 @@ class MixinLoader extends AnnotationsLoader {
     }
 
     @Override public Annotations onType(Class<?> type) {
-        List<Annotations> candidates = mixinsFor(type)
-            .map(AnnotationInstance::targetClass)
-            .map(classInfo -> new MixinAnnotations(
-                classInfo::annotations, classInfo::annotations, delegate.onType(type)))
-            .collect(toList());
-        return (candidates.isEmpty()) ? delegate.onType(type)
-            : new MergedAnnotations(candidates);
+        Annotations otherAnnotations = delegate.onType(type);
+        return mixinAnnotations(type, otherAnnotations, Optional::of);
     }
 
     @Override public Annotations onField(Class<?> type, String fieldName) {
-        List<Annotations> candidates = mixinsFor(type)
-            .map(AnnotationInstance::targetClass)
-            .flatMap(targetClass -> toStream(targetClass.field(fieldName)))
-            .map(fieldInfo -> (Annotations) new MixinAnnotations(
-                fieldInfo::annotations, fieldInfo::annotations, delegate.onField(type, fieldName)))
-            .collect(toList());
-        return (candidates.isEmpty()) ? delegate.onField(type, fieldName)
-            : new MergedAnnotations(candidates);
+        Annotations otherAnnotations = delegate.onField(type, fieldName);
+        return mixinAnnotations(type, otherAnnotations, classInfo -> classInfo.field(fieldName));
     }
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
+        Annotations otherAnnotations = delegate.onMethod(type, methodName, argTypes);
+        return mixinAnnotations(type, otherAnnotations, classInfo -> classInfo.method(methodName, argTypes));
+    }
+
+    private Annotations mixinAnnotations(Class<?> type, Annotations otherAnnotations, Function<ClassInfo, Optional<? extends Annotatable>> finder) {
         List<Annotations> candidates = mixinsFor(type)
             .map(AnnotationInstance::targetClass)
-            .flatMap(classInfo -> toStream(classInfo.method(methodName, argTypes)))
-            .map(methodInfo -> (Annotations) new MixinAnnotations(
-                methodInfo::annotations, methodInfo::annotations, delegate.onMethod(type, methodName, argTypes)))
+            .flatMap(classInfo -> toStream(finder.apply(classInfo)))
+            .map(annotatable -> mixinAnnotations(annotatable, otherAnnotations))
             .collect(toList());
-        return (candidates.isEmpty()) ? delegate.onMethod(type, methodName, argTypes)
-            : new MergedAnnotations(candidates);
+        return (candidates.isEmpty()) ? otherAnnotations : new MergedAnnotations(candidates);
     }
 
     private Stream<AnnotationInstance> mixinsFor(Class<?> type) {
@@ -66,8 +60,13 @@ class MixinLoader extends AnnotationsLoader {
     }
 
     private boolean isMixinFor(AnnotationInstance mixin, Class<?> type) {
-        return mixin.value("value").classValue().getName().equals(type.getName());
+        return mixin.value("value").classValue().name().equals(type.getName());
     }
+
+    private Annotations mixinAnnotations(Annotatable annotatable, Annotations otherAnnotations) {
+        return new MixinAnnotations(annotatable::annotations, annotatable::annotations, otherAnnotations);
+    }
+
 
     private static class MixinAnnotations implements Annotations {
         private final Supplier<Stream<AnnotationInstance>> all;

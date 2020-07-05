@@ -2,6 +2,7 @@ package com.github.t1.annotations.impl;
 
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
+import com.github.t1.annotations.index.Annotatable;
 import com.github.t1.annotations.index.AnnotationInstance;
 import com.github.t1.annotations.index.ClassInfo;
 import com.github.t1.annotations.index.Index;
@@ -31,17 +32,21 @@ class StereotypeLoader extends AnnotationsLoader {
     }
 
     @Override public Annotations onField(Class<?> type, String fieldName) {
+        Annotations otherAnnotations = other.onField(type, fieldName);
         return index.classInfo(type).field(fieldName)
-            .map(fieldInfo -> (Annotations) new StereotypeAnnotations(
-                fieldInfo.toString(), fieldInfo::annotations, other.onField(type, fieldName)))
-            .orElseGet(() -> other.onField(type, fieldName));
+            .map(fieldInfo -> stereotypeAnnotations(fieldInfo, otherAnnotations))
+            .orElse(otherAnnotations);
     }
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
+        Annotations otherAnnotations = other.onMethod(type, methodName, argTypes);
         return index.classInfo(type).method(methodName, argTypes)
-            .map(methodInfo -> (Annotations) new StereotypeAnnotations(
-                methodInfo.toString(), methodInfo::annotations, other.onMethod(type, methodName, argTypes)))
-            .orElseGet(() -> other.onMethod(type, methodName, argTypes));
+            .map(methodInfo -> stereotypeAnnotations(methodInfo, otherAnnotations))
+            .orElse(otherAnnotations);
+    }
+
+    private Annotations stereotypeAnnotations(Annotatable annotatable, Annotations otherAnnotations) {
+        return new StereotypeAnnotations(annotatable.toString(), annotatable::annotations, otherAnnotations);
     }
 
     private static class StereotypeAnnotations implements Annotations {

@@ -3,6 +3,7 @@ package com.github.t1.annotations.impl;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.MixinFor;
+import com.github.t1.annotations.index.Annotatable;
 import com.github.t1.annotations.index.AnnotationInstance;
 import com.github.t1.annotations.index.ClassInfo;
 import com.github.t1.annotations.index.Index;
@@ -32,17 +33,21 @@ class AnnotationMixinLoader extends AnnotationsLoader {
     }
 
     @Override public Annotations onField(Class<?> type, String fieldName) {
+        Annotations otherAnnotations = other.onField(type, fieldName);
         return index.classInfo(type).field(fieldName)
-            .map(fieldInfo -> (Annotations) new AnnotationMixinAnnotations(
-                fieldInfo.toString(), fieldInfo::annotations, other.onField(type, fieldName)))
-            .orElseGet(() -> other.onField(type, fieldName));
+            .map(fieldInfo -> annotationMixinAnnotations(fieldInfo, otherAnnotations))
+            .orElse(otherAnnotations);
     }
 
     @Override public Annotations onMethod(Class<?> type, String methodName, Class<?>... argTypes) {
+        Annotations otherAnnotations = other.onMethod(type, methodName, argTypes);
         return index.classInfo(type).method(methodName, argTypes)
-            .map(methodInfo -> (Annotations) new AnnotationMixinAnnotations(
-                methodInfo.toString(), methodInfo::annotations, other.onMethod(type, methodName, argTypes)))
-            .orElseGet(() -> other.onMethod(type, methodName, argTypes));
+            .map(methodInfo -> annotationMixinAnnotations(methodInfo, otherAnnotations))
+            .orElse(otherAnnotations);
+    }
+
+    private Annotations annotationMixinAnnotations(Annotatable annotatable, Annotations other) {
+        return new AnnotationMixinAnnotations(annotatable.toString(), annotatable::annotations, other);
     }
 
     private class AnnotationMixinAnnotations implements Annotations {
