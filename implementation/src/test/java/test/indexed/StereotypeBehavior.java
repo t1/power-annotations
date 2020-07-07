@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.jandexed.TestTools.buildAnnotationsLoader;
+import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class StereotypeBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
@@ -55,7 +55,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationsFromClassStereotype() {
             List<Annotation> someAnnotation = annotations.all();
 
-            then(someAnnotation.stream().map(Object::toString)).containsExactly(
+            then(someAnnotation.stream().map(Object::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 5) on " + StereotypedClass.class.getName(),
                 "@" + SomeStereotype.class.getName() + " on " + StereotypedClass.class.getName(),
                 "@" + Stereotype.class.getName() + " on " + SomeStereotype.class.getName(),
@@ -68,7 +68,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllNonRepeatableAnnotationsFromClassStereotype() {
             Stream<SomeAnnotation> someAnnotation = annotations.all(SomeAnnotation.class);
 
-            then(someAnnotation.map(Objects::toString)).containsExactly(
+            then(someAnnotation.map(Objects::toString)).containsOnly(
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName()
             );
         }
@@ -76,7 +76,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllRepeatableAnnotationFromClassStereotype() {
             Stream<RepeatableAnnotation> someAnnotation = annotations.all(RepeatableAnnotation.class);
 
-            then(someAnnotation.map(Objects::toString)).containsExactly(
+            then(someAnnotation.map(Objects::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 5) on " + StereotypedClass.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeStereotype.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeStereotype.class.getName()
@@ -116,7 +116,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllNonRepeatableAnnotationsFromTwoStereotypes() {
             Stream<SomeAnnotation> someAnnotations = annotations.all(SomeAnnotation.class);
 
-            then(someAnnotations.map(Objects::toString)).containsExactly(
+            then(someAnnotations.map(Objects::toString)).containsOnly(
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"another-stereotype\") on " + AnotherStereotype.class.getName()
             );
@@ -125,7 +125,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllRepeatableAnnotationsFromTwoStereotypes() {
             Stream<RepeatableAnnotation> repeatableAnnotations = annotations.all(RepeatableAnnotation.class);
 
-            then(repeatableAnnotations.map(Objects::toString)).containsExactly(
+            then(repeatableAnnotations.map(Objects::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 6) on " + DoubleStereotypedClass.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeStereotype.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeStereotype.class.getName(),
@@ -137,7 +137,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationsFromTwoStereotypes() {
             List<Annotation> all = annotations.all();
 
-            then(all.stream().map(Objects::toString)).containsExactly(
+            then(all.stream().map(Objects::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 6) on " + DoubleStereotypedClass.class.getName(),
                 "@" + SomeStereotype.class.getName() + " on " + DoubleStereotypedClass.class.getName(),
                 "@" + AnotherStereotype.class.getName() + " on " + DoubleStereotypedClass.class.getName(),
@@ -177,7 +177,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationsFromFieldStereotype() {
             List<Annotation> someAnnotation = annotations.all();
 
-            then(someAnnotation.stream().map(Object::toString)).containsExactly(
+            then(someAnnotation.stream().map(Object::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithFields.class.getName() + ".foo",
                 "@" + SomeStereotype.class.getName() + " on " + ClassWithFields.class.getName() + ".foo",
                 "@" + Stereotype.class.getName() + " on " + SomeStereotype.class.getName(),
@@ -190,7 +190,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationNonRepeatableTypedFromFieldStereotype() {
             Stream<SomeAnnotation> someAnnotation = annotations.all(SomeAnnotation.class);
 
-            then(someAnnotation.map(Objects::toString)).containsExactly(
+            then(someAnnotation.map(Objects::toString)).containsOnly(
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName()
             );
         }
@@ -217,7 +217,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationsFromMethodStereotype() {
             List<Annotation> someAnnotation = annotations.all();
 
-            then(someAnnotation.stream().map(Object::toString)).containsExactly(
+            then(someAnnotation.stream().map(Object::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithMethods.class.getName() + ".foo",
                 "@" + SomeStereotype.class.getName() + " on " + ClassWithMethods.class.getName() + ".foo",
                 "@" + Stereotype.class.getName() + " on " + SomeStereotype.class.getName(),
@@ -230,7 +230,7 @@ public class StereotypeBehavior {
         @Test void shouldGetAllAnnotationNonRepeatableTypedFromMethodStereotype() {
             Stream<SomeAnnotation> someAnnotation = annotations.all(SomeAnnotation.class);
 
-            then(someAnnotation.map(Objects::toString)).containsExactly(
+            then(someAnnotation.map(Objects::toString)).containsOnly(
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName()
             );
         }

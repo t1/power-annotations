@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
@@ -7,11 +7,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.jandexed.TestTools.buildAnnotationsLoader;
+import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class JandexBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
@@ -35,11 +38,11 @@ public class JandexBehavior {
     }
 
 
-    @SomeAnnotation("nested-interface")
+    @SomeAnnotation("interface")
     @SomeAnnotationWithDefaultValue
     interface SomeInterface {
-        @SomeAnnotation("nested-interface-method")
-        void foo(String x);
+        @SomeAnnotation("interface-method")
+        void foo(@Deprecated String x);
     }
 
     @Nested class ClassAnnotations {
@@ -59,7 +62,7 @@ public class JandexBehavior {
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
-            thenIsSomeAnnotation(annotation, "nested-interface")
+            thenIsSomeAnnotation(annotation, "interface")
                 .isNotSameAs(SomeInterface.class.getAnnotation(SomeAnnotation.class));
         }
 
@@ -81,6 +84,16 @@ public class JandexBehavior {
             then(someAnnotation.annotationType()).isEqualTo(SomeAnnotationWithDefaultValue.class);
             then(someAnnotation.valueWithDefault()).isEqualTo("default-value");
             then(someAnnotation).isNotSameAs(SomeInterface.class.getAnnotation(SomeAnnotation.class));
+        }
+
+        @Test void shouldGetAllClassAnnotations() {
+            Annotations annotations = TheAnnotations.onType(SomeInterface.class);
+
+            List<Annotation> list = annotations.all();
+
+            then(list.stream().map(Object::toString)).containsOnly(
+                "@" + SomeAnnotationWithDefaultValue.class.getName() + " on " + SomeInterface.class.getName(),
+                "@" + SomeAnnotation.class.getName() + "(value = \"interface\") on " + SomeInterface.class.getName());
         }
     }
 
@@ -147,8 +160,24 @@ public class JandexBehavior {
 
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
-            thenIsSomeAnnotation(annotation, "nested-interface-method")
-                .isNotSameAs(SomeInterface.class.getDeclaredMethod("foo", String.class).getAnnotation(SomeAnnotation.class));
+            thenIsSomeAnnotation(annotation, "interface-method")
+                .isNotSameAs(fooMethod().getAnnotation(SomeAnnotation.class));
+        }
+
+        @Test void shouldGetAllMethodAnnotations() throws NoSuchMethodException {
+            Annotations annotations = TheAnnotations.onMethod(SomeInterface.class, "foo", String.class);
+
+            List<Annotation> all = annotations.all();
+
+            then(fooMethod().getParameterAnnotations()[0][0].toString())
+                .startsWith("@" + Deprecated.class.getName()); // `since` and `forRemoval` are JDK 9+
+            then(all.stream().map(Object::toString)).containsOnly(
+                // the parameter annotation @Deprecated must not be visible as method annotation
+                "@" + SomeAnnotation.class.getName() + "(value = \"interface-method\") on " + SomeInterface.class.getName() + ".foo");
+        }
+
+        private Method fooMethod() throws NoSuchMethodException {
+            return SomeInterface.class.getDeclaredMethod("foo", String.class);
         }
 
         // implementation detail

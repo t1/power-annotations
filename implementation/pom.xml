@@ -29,7 +29,7 @@
                             <processDefaultFileSet>false</processDefaultFileSet>
                             <fileSets>
                                 <fileSet>
-                                    <directory>${project.build.directory}/test-classes/test/jandexed</directory>
+                                    <directory>${project.build.directory}/test-classes/test/indexed</directory>
                                 </fileSet>
                             </fileSets>
                         </configuration>

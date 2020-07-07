@@ -3,8 +3,8 @@ package test.plain;
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import org.junit.jupiter.api.Test;
-import test.jandexed.RepeatableAnnotation;
-import test.jandexed.SomeAnnotation;
+import test.indexed.RepeatableAnnotation;
+import test.indexed.SomeAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -93,6 +93,6 @@ public class DynamicJandexBehavior {
 
         Stream<RepeatableAnnotation> someAnnotations = annotations.all(RepeatableAnnotation.class);
 
-        then(someAnnotations.map(RepeatableAnnotation::value)).containsExactly(1, 2);
+        then(someAnnotations.map(RepeatableAnnotation::value)).containsOnly(1, 2);
     }
 }

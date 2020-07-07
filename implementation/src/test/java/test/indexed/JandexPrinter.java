@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import com.github.t1.annotations.index.Indexer;
 import org.jboss.jandex.Index;
@@ -18,7 +18,7 @@ public class JandexPrinter {
     public static void main(String[] args) {
         JandexPrinter printer = (args.length > 0 && "--classpath".equals(args[0]))
             ? new JandexPrinter(new Indexer().build())
-            : new JandexPrinter(Paths.get("implementation/target/test-classes/test/jandexed/META-INF/jandex.idx"));
+            : new JandexPrinter(Paths.get("implementation/target/test-classes/test/indexed/META-INF/jandex.idx"));
         printer.run();
     }
 

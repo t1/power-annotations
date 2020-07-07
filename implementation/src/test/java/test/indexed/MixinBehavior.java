@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.jandexed.TestTools.buildAnnotationsLoader;
+import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class MixinBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
@@ -159,7 +159,7 @@ public class MixinBehavior {
 
             Stream<SomeAnnotation> someAnnotation = annotations.all(SomeAnnotation.class);
 
-            then(someAnnotation.map(Object::toString)).containsExactly(
+            then(someAnnotation.map(Object::toString)).containsOnly(
                 "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\") on " + NotExtensibleMixin.class.getName());
         }
 
@@ -168,7 +168,7 @@ public class MixinBehavior {
 
             List<Annotation> all = annotations.all();
 
-            then(all.stream().map(Object::toString)).containsExactly(
+            then(all.stream().map(Object::toString)).containsOnly(
                 "@" + NotExtensible.class.getName() + " on " + NotExtensibleTarget.class.getName(),
                 "@" + MixinFor.class.getName() + "(value = " + NotExtensible.class.getName() + ") " +
                     "on " + NotExtensibleMixin.class.getName());

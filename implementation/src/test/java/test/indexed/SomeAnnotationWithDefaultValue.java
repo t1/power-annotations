@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import java.lang.annotation.Retention;
 

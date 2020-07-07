@@ -1,7 +1,7 @@
 package test.plain;
 
-import test.jandexed.RepeatableAnnotation;
-import test.jandexed.SomeAnnotation;
+import test.indexed.RepeatableAnnotation;
+import test.indexed.SomeAnnotation;
 
 @SuppressWarnings("unused")
 @SomeAnnotation("some-reflection-class")

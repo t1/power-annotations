@@ -1,4 +1,4 @@
-package test.jandexed;
+package test.indexed;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.jandexed.TestTools.buildAnnotationsLoader;
+import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class RepeatedAnnotationsBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
@@ -49,7 +49,7 @@ public class RepeatedAnnotationsBehavior {
 
         List<Annotation> all = TheAnnotations.onType(SomeClass.class).all();
 
-        then(all.stream().map(Object::toString)).containsExactly(
+        then(all.stream().map(Object::toString)).containsOnly(
             "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeClass.class.getName(),
             "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClass.class.getName());
     }
@@ -62,6 +62,6 @@ public class RepeatedAnnotationsBehavior {
         Stream<RepeatableAnnotation> someAnnotations = TheAnnotations.onType(SomeClass.class)
             .all(RepeatableAnnotation.class);
 
-        then(someAnnotations.map(RepeatableAnnotation::value)).containsExactly(1, 2);
+        then(someAnnotations.map(RepeatableAnnotation::value)).containsOnly(1, 2);
     }
 }

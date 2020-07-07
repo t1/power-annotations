@@ -1,6 +1,6 @@
-package test.jandexed;
+package test.indexed;
 
-import test.jandexed.RepeatableAnnotation.RepeatableAnnotations;
+import test.indexed.RepeatableAnnotation.RepeatableAnnotations;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
