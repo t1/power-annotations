@@ -11,6 +11,10 @@ import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
 import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
 
 public class AnnotationInstance {
+    public static AnnotationInstance from(Object value) {
+        return new AnnotationInstance(null, (org.jboss.jandex.AnnotationInstance) value);
+    }
+
     /** the stream of one single or several repeatable annotations */
     static Stream<AnnotationInstance> resolveRepeatables(Index index, org.jboss.jandex.AnnotationInstance instance) {
         if (isRepeatable(index, instance))
@@ -50,11 +54,12 @@ public class AnnotationInstance {
     private final org.jboss.jandex.AnnotationInstance delegate;
 
     private AnnotationInstance(Index index, org.jboss.jandex.AnnotationInstance delegate) {
-        this.index = requireNonNull(index);
+        this.index = index;
         this.delegate = requireNonNull(delegate);
     }
 
     @Override public String toString() { return delegate.toString(false) + " on " + targetString(); }
+
 
     private String targetString() {
         AnnotationTarget target = delegate.target();
@@ -71,7 +76,9 @@ public class AnnotationInstance {
     }
 
 
-    public ClassInfo type() { return new ClassInfo(index, delegate.name()); }
+    public ClassInfo type() { return new ClassInfo(index(), delegate.name()); }
+
+    private Index index() { return requireNonNull(index); }
 
     public AnnotationValue value(String name) {
         org.jboss.jandex.AnnotationValue value = delegate.value(name);
@@ -87,6 +94,6 @@ public class AnnotationInstance {
     }
 
     public ClassInfo targetClass() {
-        return new ClassInfo(index, delegate.target().asClass());
+        return new ClassInfo(index(), delegate.target().asClass());
     }
 }

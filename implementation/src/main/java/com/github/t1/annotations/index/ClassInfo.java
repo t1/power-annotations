@@ -1,5 +1,6 @@
 package com.github.t1.annotations.index;
 
+import org.jboss.jandex.ClassType;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
 
@@ -13,6 +14,19 @@ import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 public class ClassInfo implements Annotatable {
+    public static Class<?> toClass(Object value) {
+        String className = ((ClassType) value).name().toString();
+
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try {
+            // TODO does this work in Quarkus?
+            return Class.forName(className, true, loader);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("class not found '" + className + "'", e);
+        }
+    }
+
+
     private final Index index;
     private final org.jboss.jandex.ClassInfo delegate;
 

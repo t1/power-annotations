@@ -43,4 +43,10 @@ class Utils {
     static <T> Optional<T> or(Optional<T> optional, Supplier<Optional<T>> alternative) {
         return optional.isPresent() ? optional : alternative.get();
     }
+
+    static <T extends Enum<T>> Enum<T> enumValue(Class<?> type, String value) {
+        @SuppressWarnings("unchecked")
+        Class<T> enumType = (Class<T>) type;
+        return Enum.valueOf(enumType, value);
+    }
 }

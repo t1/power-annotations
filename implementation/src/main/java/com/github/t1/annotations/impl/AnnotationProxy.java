@@ -1,12 +1,17 @@
 package com.github.t1.annotations.impl;
 
 import com.github.t1.annotations.index.AnnotationInstance;
+import com.github.t1.annotations.index.AnnotationValue;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static com.github.t1.annotations.impl.Utils.enumValue;
+import static com.github.t1.annotations.index.ClassInfo.toClass;
 
 /**
  * {@link #build() Builds} a {@link Proxy dynamic proxy} that delegates to three
@@ -66,6 +71,28 @@ class AnnotationProxy {
             return getAnnotationType();
         if ("toString".equals(name))
             return toString.get();
-        return property.apply(name);
+
+        Object value = property.apply(name);
+
+        return toType(value, method.getReturnType());
+    }
+
+    private Object toType(Object value, Class<?> returnType) {
+        if (returnType.isAnnotation())
+            return proxy(AnnotationInstance.from(value));
+        if (returnType.isEnum())
+            return enumValue(returnType, (String) value);
+        if (returnType.equals(Class.class))
+            return toClass(value);
+        if (returnType.isArray())
+            return toArray(returnType.getComponentType(), (Object[]) value);
+        return value;
+    }
+
+    private Object toArray(Class<?> componentType, Object[] values) {
+        Object array = Array.newInstance(componentType, values.length);
+        for (int i = 0; i < values.length; i++)
+            Array.set(array, i, toType(AnnotationValue.of(values[i]), componentType));
+        return array;
     }
 }
