@@ -32,8 +32,9 @@ public class JandexBehavior {
 
             Throwable throwable = catchThrowable(() -> buildAnnotationsLoader(inputStream));
 
-            then(throwable).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Not a jandex index");
+            then(throwable)
+                .hasRootCauseInstanceOf(IllegalArgumentException.class)
+                .hasRootCauseMessage("Not a jandex index");
         }
     }
 

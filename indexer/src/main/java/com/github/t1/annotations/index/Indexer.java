@@ -22,15 +22,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.logging.Level.FINE;
 import static java.util.stream.Collectors.joining;
 
-public class Indexer {
+class Indexer {
     private static final Logger LOG = Logger.getLogger(Indexer.class.getName());
     private static final Level LEVEL = FINE;
 
-    private static void log(String message) { LOG.log(LEVEL, message); }
+    private static void log(String message) {
+        LOG.log(LEVEL, message);
+    }
 
-    static Index init() {
+    static IndexView loadFromIndexFile() {
         try (InputStream inputStream = getClassLoader().getResourceAsStream("META-INF/jandex.idx")) {
-            IndexView indexView = (inputStream == null) ? new Indexer().build() : initFrom(inputStream);
+            IndexView indexView = (inputStream == null) ? new Indexer().build() : loadFrom(inputStream);
             if (LOG.isLoggable(LEVEL)) {
                 log("------------------------------------------------------------");
                 indexView.getKnownClasses().forEach(classInfo ->
@@ -40,7 +42,7 @@ public class Indexer {
                 );
                 log("------------------------------------------------------------");
             }
-            return new Index(indexView);
+            return indexView;
         } catch (RuntimeException | IOException e) {
             throw new RuntimeException("can't read index file", e);
         }
@@ -51,7 +53,7 @@ public class Indexer {
         return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 
-    private static IndexView initFrom(InputStream inputStream) {
+    static IndexView loadFrom(InputStream inputStream) {
         try {
             return new IndexReader(inputStream).read();
         } catch (RuntimeException | IOException e) {
@@ -61,7 +63,7 @@ public class Indexer {
 
     private final org.jboss.jandex.Indexer indexer = new org.jboss.jandex.Indexer();
 
-    public IndexView build() {
+    IndexView build() {
         urls().distinct().forEach(this::index);
         return indexer.complete();
     }

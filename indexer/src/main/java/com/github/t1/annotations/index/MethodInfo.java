@@ -1,13 +1,15 @@
 package com.github.t1.annotations.index;
 
-import org.jboss.jandex.AnnotationValue;
+import static java.util.Objects.requireNonNull;
+
+import static org.jboss.jandex.AnnotationTarget.Kind.METHOD;
+
+import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
-import static java.util.Objects.requireNonNull;
-import static org.jboss.jandex.AnnotationTarget.Kind.METHOD;
+import org.jboss.jandex.AnnotationValue;
 
 public class MethodInfo implements Annotatable {
     private final Index index;

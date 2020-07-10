@@ -1,17 +1,18 @@
 package com.github.t1.annotations.index;
 
-import org.jboss.jandex.ClassType;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Type;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.requireNonNull;
+
+import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
-import static java.lang.reflect.Modifier.PUBLIC;
-import static java.util.Collections.emptyMap;
-import static java.util.Objects.requireNonNull;
+import org.jboss.jandex.ClassType;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 
 public class ClassInfo implements Annotatable {
     public static Class<?> toClass(Object value) {

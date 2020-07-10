@@ -1,14 +1,15 @@
 package com.github.t1.annotations.index;
 
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
+import static java.util.Objects.requireNonNull;
+
+import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
+import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
 
 import java.lang.annotation.Repeatable;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
-import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
-import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.DotName;
 
 public class AnnotationInstance {
     public static AnnotationInstance from(Object value) {

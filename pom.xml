@@ -12,6 +12,7 @@
 
     <modules>
         <module>api</module>
+        <module>indexer</module>
         <module>implementation</module>
         <module>tck</module>
         <module>demo</module>

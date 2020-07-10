@@ -1,9 +1,10 @@
 package com.github.t1.annotations.index;
 
-import java.util.stream.Stream;
+import static java.util.Objects.requireNonNull;
 
 import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
-import static java.util.Objects.requireNonNull;
+
+import java.util.stream.Stream;
 
 public class FieldInfo implements Annotatable {
     private final Index index;
