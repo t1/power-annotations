@@ -17,12 +17,8 @@ import static java.util.stream.Collectors.toList;
 
 class DirectAnnotationsLoader extends AnnotationsLoader {
     private final Index index;
-    private final AnnotationsLoader other;
 
-    DirectAnnotationsLoader(Index index, AnnotationsLoader other) {
-        this.index = index;
-        this.other = other;
-    }
+    DirectAnnotationsLoader(Index index) { this.index = index; }
 
     @Override public Annotations onType(Class<?> type) {
         ClassInfo classInfo = index.classInfo(type);

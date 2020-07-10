@@ -36,3 +36,10 @@ Voila! MP GraphQL would work as if all JPA `@Id` annotations where it's own.
 Just like https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes], but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class, but as that would exclude CDI, any annotation with that name will work.
 
 The simplest use-case for Stereotypes is aliasing, i.e. using one annotation instead of another, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations). And it gets more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B.
+
+
+=== Resolve From Class
+
+If a method or field is _not_ annotated with some annotation, the annotations from the class are considered as a fallback, both for `get(type)` and `all(type)`. When listing `all()` annotations on a method or field, class annotations are ignored.
+
+*Feedback required*: should this only happen with an explicit annotation, e.g. `@FallbackToClass`.
