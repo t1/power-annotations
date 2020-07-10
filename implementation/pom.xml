@@ -49,7 +49,6 @@
             <groupId>com.github.t1</groupId>
             <artifactId>power-annotations-indexer</artifactId>
             <version>${project.version}</version>
-            <scope>runtime</scope>
             <!--for testing this module to have no dependencies on Jandex: -->
             <!--<exclusions>
                 <exclusion>
