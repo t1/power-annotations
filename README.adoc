@@ -40,6 +40,13 @@ The simplest use-case for Stereotypes is aliasing, i.e. using one annotation ins
 
 === Resolve From Class
 
-If a method or field is _not_ annotated with some annotation, the annotations from the class are considered as a fallback, both for `get(type)` and `all(type)`. When listing `all()` annotations on a method or field, class annotations are ignored.
+`get(type)` considers the annotations from the class as a fallback only if a method or field is _not_ annotated with an annotation of the same type.
 
-*Feedback required*: should this only happen with an explicit annotation, e.g. `@FallbackToClass`.
+`all(type)` of a _non-repeatable_ annotation considers the annotations on the class only if the field/method is _not_ annotated with the same type (same logic as for `get(type)`). `all(type)` of a _repeatable_ annotation merges the annotations on the field/method with the annotations on the class.
+
+`all()` never considers class annotations.
+
+*Feedback required*:
+
+1. should this only happen with an explicit annotation, e.g. `@FallbackToClass`.
+2. Should `all()` in some cases also include class annotations? Probably with the same logic about repeatables as for `all(type)`. Maybe only explicitly allowed with `@Target` annotations?

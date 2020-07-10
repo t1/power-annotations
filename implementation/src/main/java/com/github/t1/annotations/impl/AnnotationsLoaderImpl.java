@@ -5,7 +5,7 @@ import com.github.t1.annotations.AnnotationsLoader;
 import com.github.t1.annotations.index.Index;
 
 public class AnnotationsLoaderImpl extends AnnotationsLoader {
-    private final Index index;
+    final Index index;
     private final AnnotationsLoader loader;
 
     /** Used by the ServiceLoader */

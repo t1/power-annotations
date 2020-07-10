@@ -1,18 +1,18 @@
 package com.github.t1.annotations.index;
 
-import static java.lang.reflect.Modifier.PUBLIC;
-import static java.util.Collections.emptyMap;
-import static java.util.Objects.requireNonNull;
-
-import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
+import org.jboss.jandex.ClassType;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Type;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.jboss.jandex.ClassType;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Type;
+import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
+import static com.github.t1.annotations.index.Utils.toDotName;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.requireNonNull;
 
 public class ClassInfo implements Annotatable {
     public static Class<?> toClass(Object value) {
@@ -31,22 +31,21 @@ public class ClassInfo implements Annotatable {
     private final Index index;
     private final org.jboss.jandex.ClassInfo delegate;
 
+    ClassInfo(Index index, Class<?> type) {
+        this(index, toDotName(type));
+    }
+
+    ClassInfo(Index index, DotName name) {
+        this(index, index.getClassByName(name).orElseGet(() -> mock(name)));
+    }
+
     ClassInfo(Index index, org.jboss.jandex.ClassInfo delegate) {
         this.index = requireNonNull(index);
         this.delegate = requireNonNull(delegate);
     }
 
-    ClassInfo(Index index, DotName name) {
-        this.index = index;
-        this.delegate = Optional.ofNullable(byName(name)).orElseGet(() -> mock(name));
-    }
-
-    private org.jboss.jandex.ClassInfo byName(DotName name) {
-        return this.index.jandex.getClassByName(name);
-    }
-
     @SuppressWarnings("deprecation")
-    private org.jboss.jandex.ClassInfo mock(DotName name) {
+    private static org.jboss.jandex.ClassInfo mock(DotName name) {
         return org.jboss.jandex.ClassInfo.create(
             name, null, (short) PUBLIC, new DotName[0], emptyMap(), true);
     }

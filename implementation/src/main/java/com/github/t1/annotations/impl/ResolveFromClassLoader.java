@@ -12,10 +12,10 @@ import static com.github.t1.annotations.impl.Utils.or;
 import static java.util.stream.Collectors.toList;
 
 class ResolveFromClassLoader extends AnnotationsLoader {
-    private final AnnotationsLoader loader;
+    private final AnnotationsLoaderImpl loader;
     private final AnnotationsLoader other;
 
-    public ResolveFromClassLoader(AnnotationsLoader loader, AnnotationsLoader other) {
+    public ResolveFromClassLoader(AnnotationsLoaderImpl loader, AnnotationsLoader other) {
         this.loader = loader;
         this.other = other;
     }
@@ -49,6 +49,8 @@ class ResolveFromClassLoader extends AnnotationsLoader {
         }
 
         @Override public <T extends Annotation> Stream<T> all(Class<T> type) {
+            if (loader.index.isRepeatable(type))
+                return Stream.concat(memberAnnotations.all(type), classAnnotations.all(type));
             List<T> onMember = memberAnnotations.all(type).collect(toList());
             return onMember.isEmpty()
                 ? classAnnotations.all(type)

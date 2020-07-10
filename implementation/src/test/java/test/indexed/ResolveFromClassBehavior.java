@@ -6,29 +6,32 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.assertj.core.api.BDDAssertions.then;
 import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class ResolveFromClassBehavior {
     AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
 
-    @Retention(RUNTIME)
-    @Target(TYPE)
-    public @interface ClassOnlyAnnotation {}
-
-    @Retention(RUNTIME)
-    public @interface EverywhereAnnotation {}
-
     @Nested class FieldAnnotations {
         @Test void shouldGetFieldAnnotationFromClass() {
+            @SomeAnnotation("class-annotation")
+            class SomeClass {
+                @SuppressWarnings("unused")
+                String someField;
+            }
+            Annotations annotations = TheAnnotations.onField(SomeClass.class, "someField");
+
+            Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
+
+            assert annotation.isPresent();
+            then(annotation.get().value()).isEqualTo("class-annotation");
+        }
+
+        @Test void shouldNotGetAllFieldAnnotationFromClass() {
             @SomeAnnotation("class-annotation")
             class SomeClass {
                 @SuppressWarnings("unused")
@@ -56,10 +59,10 @@ public class ResolveFromClassBehavior {
             then(annotation.map(RepeatableAnnotation::value)).containsExactly(1, 2);
         }
 
-        @Test void shouldNotGetMoreRepeatableFieldAnnotationsFromClass() {
-            @RepeatableAnnotation(1)
+        @Test void shouldGetMoreRepeatableFieldAnnotationsFromClass() {
+            @RepeatableAnnotation(2)
             class SomeClass {
-                @RepeatableAnnotation(2)
+                @RepeatableAnnotation(1)
                 @SuppressWarnings("unused")
                 String someField;
             }
@@ -67,7 +70,7 @@ public class ResolveFromClassBehavior {
 
             Stream<RepeatableAnnotation> annotation = annotations.all(RepeatableAnnotation.class);
 
-            then(annotation.map(RepeatableAnnotation::value)).containsExactly(2);
+            then(annotation.map(RepeatableAnnotation::value)).containsExactly(1, 2);
         }
 
         @Test void shouldOnlyGetAllFieldAnnotationAndNotFromClass() {
@@ -115,10 +118,10 @@ public class ResolveFromClassBehavior {
             then(annotation.map(RepeatableAnnotation::value)).containsExactly(1, 2);
         }
 
-        @Test void shouldNotGetMoreRepeatableMethodAnnotationsFromClass() {
-            @RepeatableAnnotation(1)
+        @Test void shouldGetMoreRepeatableMethodAnnotationsFromClass() {
+            @RepeatableAnnotation(2)
             class SomeClass {
-                @RepeatableAnnotation(2)
+                @RepeatableAnnotation(1)
                 @SuppressWarnings("unused")
                 void someMethod() {}
             }
@@ -126,7 +129,7 @@ public class ResolveFromClassBehavior {
 
             Stream<RepeatableAnnotation> annotation = annotations.all(RepeatableAnnotation.class);
 
-            then(annotation.map(RepeatableAnnotation::value)).containsExactly(2);
+            then(annotation.map(RepeatableAnnotation::value)).containsExactly(1, 2);
         }
     }
 }

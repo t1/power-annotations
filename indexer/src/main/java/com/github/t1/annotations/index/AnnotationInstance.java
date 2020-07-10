@@ -1,19 +1,22 @@
 package com.github.t1.annotations.index;
 
-import static java.util.Objects.requireNonNull;
-
-import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
-import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.DotName;
 
 import java.lang.annotation.Repeatable;
 import java.util.stream.Stream;
 
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
+import static java.util.Objects.requireNonNull;
+import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
+import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
 
 public class AnnotationInstance {
     public static AnnotationInstance from(Object value) {
         return new AnnotationInstance(null, (org.jboss.jandex.AnnotationInstance) value);
+    }
+
+    static boolean isRepeatable(org.jboss.jandex.ClassInfo classInfo) {
+        return classInfo.classAnnotation(REPEATABLE) != null;
     }
 
     /** the stream of one single or several repeatable annotations */

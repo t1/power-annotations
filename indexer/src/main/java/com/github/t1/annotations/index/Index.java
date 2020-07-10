@@ -4,9 +4,12 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.github.t1.annotations.index.AnnotationInstance.resolveRepeatables;
+import static com.github.t1.annotations.index.Utils.toDotName;
 import static java.util.Objects.requireNonNull;
 
 public class Index {
@@ -30,12 +33,19 @@ public class Index {
     @Deprecated public IndexView getJandex() { return jandex; }
 
     public ClassInfo classInfo(Class<?> type) {
-        DotName name = DotName.createSimple(type.getName());
-        return new ClassInfo(this, name);
+        return new ClassInfo(this, type);
+    }
+
+    Optional<org.jboss.jandex.ClassInfo> getClassByName(DotName name) {
+        return Optional.ofNullable(this.jandex.getClassByName(name));
     }
 
     public Stream<AnnotationInstance> annotations(Class<?> type) {
-        return jandex.getAnnotations(DotName.createSimple(type.getName())).stream()
+        return jandex.getAnnotations(toDotName(type)).stream()
             .flatMap(instance -> resolveRepeatables(this, instance));
+    }
+
+    public boolean isRepeatable(Class<? extends Annotation> type) {
+        return AnnotationInstance.isRepeatable(jandex.getClassByName(toDotName(type)));
     }
 }
