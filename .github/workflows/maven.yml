@@ -19,7 +19,7 @@ jobs:
     - name: Build with Maven
       run: mvn --batch-mode package
 
-  build-with-jandex:
+  tck-with-jandex:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,4 +33,4 @@ jobs:
         path: ~/.m2/repository
         key: maven-${{ hashFiles('**/pom.xml') }}
     - name: Build with Maven
-      run: cd implementation && mvn --batch-mode package -Pjandex
+      run: cd tck && mvn --batch-mode package -Pjandex
