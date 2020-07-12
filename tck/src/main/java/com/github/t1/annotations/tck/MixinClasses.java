@@ -8,6 +8,9 @@ import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class MixinClasses {
+    @Retention(RUNTIME)
+    public @interface AnotherAnnotation {}
+
     public static class TypeAnnotationMixinClasses {
         @Retention(RUNTIME)
         public @interface SomeAnnotationWithoutValue {}
@@ -18,7 +21,7 @@ public class MixinClasses {
         public static class SomeClassWithVariousAnnotations {}
 
         @MixinFor(SomeClassWithVariousAnnotations.class)
-        @Deprecated
+        @AnotherAnnotation
         @SomeAnnotation("replacing")
         @RepeatableAnnotation(1)
         public static class MixinForSomeClassWithVariousAnnotations {}
@@ -88,7 +91,7 @@ public class MixinClasses {
         @MixinFor(SomeClassWithFieldWithVariousAnnotations.class)
         public static class MixinForSomeClassWithFieldWithVariousAnnotations {
             @SuppressWarnings("unused")
-            @Deprecated
+            @AnotherAnnotation
             @SomeAnnotation("replacing")
             @RepeatableAnnotation(1)
             String foo;
@@ -161,7 +164,7 @@ public class MixinClasses {
         @MixinFor(SomeClassWithMethodWithVariousAnnotations.class)
         public static class MixinForSomeClassWithMethodWithVariousAnnotations {
             @SuppressWarnings("unused")
-            @Deprecated
+            @AnotherAnnotation
             @SomeAnnotation("replacing")
             @RepeatableAnnotation(1)
             String foo() { return "foo"; }

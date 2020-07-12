@@ -3,6 +3,7 @@ package test;
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.MixinFor;
+import com.github.t1.annotations.tck.MixinClasses.AnotherAnnotation;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.SomeClassWithFieldWithVariousAnnotations;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.TargetFieldClassWithTwoMixins;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.TargetFieldClassWithTwoNonRepeatableMixins;
@@ -48,7 +49,7 @@ public class MixinBehavior {
         }
 
         @Test void shouldGetMixinClassAnnotation() {
-            Optional<Deprecated> annotation = annotations.get(Deprecated.class);
+            Optional<AnotherAnnotation> annotation = annotations.get(AnotherAnnotation.class);
 
             then(annotation).isPresent();
         }
@@ -67,21 +68,19 @@ public class MixinBehavior {
             then(repeatableAnnotation.get().value()).isEqualTo(1);
         }
 
-        @SuppressWarnings("deprecation")
         @Test void shouldGetAllClassAnnotations() {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + Deprecated.class.getName() + " on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
+                "@" + AnotherAnnotation.class.getName() + " on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
                 "@" + MixinFor.class.getName() + "(value = " + SomeClassWithVariousAnnotations.class.getName() + ") on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
                 "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithVariousAnnotations.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithVariousAnnotations.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithVariousAnnotations.class.getName());
         }
 
-        @SuppressWarnings("deprecation")
         @Test void shouldGetAllRepeatableClassAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
@@ -159,21 +158,21 @@ public class MixinBehavior {
         @Test void shouldSkipUndefinedMixinFieldAnnotation() {
             Annotations annotations = Annotations.onField(SomeClassWithFieldWithVariousAnnotations.class, "bar");
 
-            Optional<SomeAnnotationWithoutValue> deprecated = annotations.get(SomeAnnotationWithoutValue.class);
+            Optional<SomeAnnotationWithoutValue> someAnnotationWithoutValue = annotations.get(SomeAnnotationWithoutValue.class);
 
-            then(deprecated).isNotPresent();
+            then(someAnnotationWithoutValue).isNotPresent();
         }
 
         @Test void shouldGetTargetFieldAnnotation() {
-            Optional<SomeAnnotationWithoutValue> deprecated = annotations.get(SomeAnnotationWithoutValue.class);
+            Optional<SomeAnnotationWithoutValue> someAnnotationWithoutValue = annotations.get(SomeAnnotationWithoutValue.class);
 
-            then(deprecated).isPresent();
+            then(someAnnotationWithoutValue).isPresent();
         }
 
         @Test void shouldGetMixinFieldAnnotation() {
-            Optional<Deprecated> deprecated = annotations.get(Deprecated.class);
+            Optional<AnotherAnnotation> anotherAnnotation = annotations.get(AnotherAnnotation.class);
 
-            then(deprecated).isPresent();
+            then(anotherAnnotation).isPresent();
         }
 
         @Test void shouldGetReplacedFieldAnnotation() {
@@ -194,7 +193,7 @@ public class MixinBehavior {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
-                "@" + Deprecated.class.getName() + " on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
+                "@" + AnotherAnnotation.class.getName() + " on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
                 "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
                 "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
@@ -243,21 +242,21 @@ public class MixinBehavior {
         @Test void shouldSkipUndefinedMixinMethodAnnotation() {
             Annotations annotations = Annotations.onMethod(SomeClassWithMethodWithVariousAnnotations.class, "bar");
 
-            Optional<SomeAnnotationWithoutValue> deprecated = annotations.get(SomeAnnotationWithoutValue.class);
+            Optional<SomeAnnotationWithoutValue> someAnnotationWithoutValue = annotations.get(SomeAnnotationWithoutValue.class);
 
-            then(deprecated).isNotPresent();
+            then(someAnnotationWithoutValue).isNotPresent();
         }
 
         @Test void shouldGetTargetMethodAnnotation() {
-            Optional<SomeAnnotationWithoutValue> deprecated = annotations.get(SomeAnnotationWithoutValue.class);
+            Optional<SomeAnnotationWithoutValue> someAnnotationWithoutValue = annotations.get(SomeAnnotationWithoutValue.class);
 
-            then(deprecated).isPresent();
+            then(someAnnotationWithoutValue).isPresent();
         }
 
         @Test void shouldGetMixinMethodAnnotation() {
-            Optional<Deprecated> deprecated = annotations.get(Deprecated.class);
+            Optional<AnotherAnnotation> anotherAnnotation = annotations.get(AnotherAnnotation.class);
 
-            then(deprecated).isPresent();
+            then(anotherAnnotation).isPresent();
         }
 
         @Test void shouldGetReplacedMethodAnnotation() {
@@ -278,7 +277,7 @@ public class MixinBehavior {
             List<Annotation> list = annotations.all();
 
             then(list.stream().map(Object::toString)).containsOnly(
-                "@" + Deprecated.class.getName() + " on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
+                "@" + AnotherAnnotation.class.getName() + " on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
                 "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
                 "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",

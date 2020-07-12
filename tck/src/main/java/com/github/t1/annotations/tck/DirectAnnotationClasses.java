@@ -1,5 +1,7 @@
 package com.github.t1.annotations.tck;
 
+import com.github.t1.annotations.tck.MixinClasses.AnotherAnnotation;
+
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -46,6 +48,6 @@ public class DirectAnnotationClasses {
 
     public interface SomeInterfaceWithAnnotatedMethod {
         @SomeAnnotation("method-annotation")
-        void foo(@Deprecated String x);
+        void foo(@AnotherAnnotation String x);
     }
 }

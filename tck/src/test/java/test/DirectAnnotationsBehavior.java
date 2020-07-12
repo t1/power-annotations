@@ -3,14 +3,15 @@ package test;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeAnnotatedClass;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeAnnotatedInterface;
+import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeAnnotationWithDefaultValue;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeClassWithAnnotatedField;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeClassWithAnnotatedMethod;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeClassWithUnannotatedField;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeClassWithUnannotatedMethod;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeInterfaceWithAnnotatedMethod;
 import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeUnannotatedClass;
+import com.github.t1.annotations.tck.MixinClasses.AnotherAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
-import com.github.t1.annotations.tck.DirectAnnotationClasses.SomeAnnotationWithDefaultValue;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -124,11 +125,10 @@ public class DirectAnnotationsBehavior {
 
             List<Annotation> all = annotations.all();
 
-            // the deprecated parameter annotation is there, but not represented as method annotation
+            // the parameter annotation must be there, but not represented as method annotation
             then(fooMethod().getParameterAnnotations()[0][0].toString())
-                .startsWith("@" + Deprecated.class.getName()); // `since` and `forRemoval` are JDK 9+
+                .startsWith("@" + AnotherAnnotation.class.getName()); // `since` and `forRemoval` are JDK 9+
             then(all.stream().map(Object::toString)).containsOnly(
-                // the parameter annotation @Deprecated must not be visible as method annotation
                 "@" + SomeAnnotation.class.getName() + "(value = \"method-annotation\") " +
                     "on " + SomeInterfaceWithAnnotatedMethod.class.getName() + ".foo");
         }
