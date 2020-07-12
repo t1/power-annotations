@@ -1,7 +1,4 @@
-package test.plain;
-
-import test.indexed.RepeatableAnnotation;
-import test.indexed.SomeAnnotation;
+package test;
 
 @SuppressWarnings("unused")
 @SomeAnnotation("some-reflection-class")

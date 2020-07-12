@@ -1,10 +1,8 @@
-package test.plain;
+package test;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import org.junit.jupiter.api.Test;
-import test.indexed.RepeatableAnnotation;
-import test.indexed.SomeAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.util.List;

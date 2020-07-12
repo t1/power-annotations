@@ -1,4 +1,4 @@
-package test.indexed;
+package test;
 
 import java.lang.annotation.Retention;
 

@@ -12,33 +12,6 @@
 
     <artifactId>power-annotations-implementation</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jboss.jandex</groupId>
-                <artifactId>jandex-maven-plugin</artifactId>
-                <version>1.0.8</version>
-                <executions>
-                    <execution>
-                        <id>make-index</id>
-                        <goals>
-                            <goal>jandex</goal>
-                        </goals>
-                        <phase>process-test-classes</phase>
-                        <configuration>
-                            <processDefaultFileSet>false</processDefaultFileSet>
-                            <fileSets>
-                                <fileSet>
-                                    <directory>${project.build.directory}/test-classes/test/indexed</directory>
-                                </fileSet>
-                            </fileSets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>com.github.t1</groupId>

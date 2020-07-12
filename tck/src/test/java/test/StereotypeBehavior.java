@@ -1,9 +1,18 @@
-package test.indexed;
+package test;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.Stereotype;
-import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
+import com.github.t1.annotations.tck.RepeatableAnnotation;
+import com.github.t1.annotations.tck.SomeAnnotation;
+import com.github.t1.annotations.tck.StereotypeClasses.AnotherStereotype;
+import com.github.t1.annotations.tck.StereotypeClasses.ClassWithStereotypedField;
+import com.github.t1.annotations.tck.StereotypeClasses.ClassWithStereotypedMethod;
+import com.github.t1.annotations.tck.StereotypeClasses.DoubleStereotypedClass;
+import com.github.t1.annotations.tck.StereotypeClasses.SomeStereotype;
+import com.github.t1.annotations.tck.StereotypeClasses.StereotypedClass;
+import com.github.t1.annotations.tck.StereotypeClasses.StereotypedClassWithSomeAnnotation;
+import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -14,42 +23,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
-import static test.indexed.TestTools.buildAnnotationsLoader;
 
 public class StereotypeBehavior {
-    AnnotationsLoaderImpl TheAnnotations = buildAnnotationsLoader();
-
-    @Stereotype
-    @Retention(RUNTIME)
-    @SomeAnnotation("stereotype")
-    @RepeatableAnnotation(1)
-    @RepeatableAnnotation(2)
-    public @interface SomeStereotype {}
-
-    @Stereotype
-    @Retention(RUNTIME)
-    @SomeAnnotation("another-stereotype")
-    @RepeatableAnnotation(3)
-    @RepeatableAnnotation(4)
-    public @interface AnotherStereotype {}
-
 
     @Nested class StereotypedClasses {
-        @SomeStereotype
-        @RepeatableAnnotation(5)
-        class StereotypedClass {}
-
-
-        Annotations annotations = TheAnnotations.onType(StereotypedClass.class);
+        Annotations annotations = Annotations.on(StereotypedClass.class);
 
         @Test void shouldGetAnnotationFromClassStereotype() {
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            then(someAnnotation.get().value()).isEqualTo("stereotype");
+            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("stereotype");
         }
 
         @Test void shouldGetAllAnnotationsFromClassStereotype() {
@@ -86,26 +72,17 @@ public class StereotypeBehavior {
         // TODO test indirect stereotypes
 
         @Test void shouldNotReplaceExistingClassAnnotation() {
-            @SomeStereotype
-            @SomeAnnotation("on-class")
-            class StereotypedClassWithSomeAnnotation {}
-
-            Annotations annotations = TheAnnotations.onType(StereotypedClassWithSomeAnnotation.class);
+            Annotations annotations = Annotations.on(StereotypedClassWithSomeAnnotation.class);
 
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            then(someAnnotation.get().value()).isEqualTo("on-class");
+            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("on-class");
         }
     }
 
     @Nested class DoubleStereotypedClasses {
-        @SomeStereotype
-        @AnotherStereotype
-        @RepeatableAnnotation(6)
-        class DoubleStereotypedClass {}
-
-        Annotations annotations = TheAnnotations.onType(DoubleStereotypedClass.class);
+        Annotations annotations = Annotations.on(DoubleStereotypedClass.class);
 
         @Test void shouldFailToGetAmbiguousAnnotationFromTwoStereotypes() {
             Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
@@ -156,30 +133,21 @@ public class StereotypeBehavior {
     }
 
     @Nested class StereotypedFields {
-        @SuppressWarnings("unused")
-        class ClassWithFields {
-            @SomeStereotype
-            @RepeatableAnnotation(7)
-            String foo;
-            boolean bar;
-        }
-
-
-        Annotations annotations = TheAnnotations.onField(ClassWithFields.class, "foo");
+        Annotations annotations = Annotations.onField(ClassWithStereotypedField.class, "foo");
 
         @Test void shouldGetAnnotationFromFieldStereotype() {
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            then(someAnnotation.get().value()).isEqualTo("stereotype");
+            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("stereotype");
         }
 
         @Test void shouldGetAllAnnotationsFromFieldStereotype() {
             List<Annotation> someAnnotation = annotations.all();
 
             then(someAnnotation.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithFields.class.getName() + ".foo",
-                "@" + SomeStereotype.class.getName() + " on " + ClassWithFields.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithStereotypedField.class.getName() + ".foo",
+                "@" + SomeStereotype.class.getName() + " on " + ClassWithStereotypedField.class.getName() + ".foo",
                 "@" + Stereotype.class.getName() + " on " + SomeStereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeStereotype.class.getName(),
@@ -197,29 +165,21 @@ public class StereotypeBehavior {
     }
 
     @Nested class StereotypedMethods {
-        @SuppressWarnings("unused")
-        class ClassWithMethods {
-            @SomeStereotype
-            @RepeatableAnnotation(7)
-            String foo() { return "foo"; }
-        }
-
-
-        Annotations annotations = TheAnnotations.onMethod(ClassWithMethods.class, "foo");
+        Annotations annotations = Annotations.onMethod(ClassWithStereotypedMethod.class, "foo");
 
         @Test void shouldGetAnnotationFromMethodStereotype() {
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            then(someAnnotation.get().value()).isEqualTo("stereotype");
+            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("stereotype");
         }
 
         @Test void shouldGetAllAnnotationsFromMethodStereotype() {
             List<Annotation> someAnnotation = annotations.all();
 
             then(someAnnotation.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithMethods.class.getName() + ".foo",
-                "@" + SomeStereotype.class.getName() + " on " + ClassWithMethods.class.getName() + ".foo",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 7) on " + ClassWithStereotypedMethod.class.getName() + ".foo",
+                "@" + SomeStereotype.class.getName() + " on " + ClassWithStereotypedMethod.class.getName() + ".foo",
                 "@" + Stereotype.class.getName() + " on " + SomeStereotype.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"stereotype\") on " + SomeStereotype.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeStereotype.class.getName(),

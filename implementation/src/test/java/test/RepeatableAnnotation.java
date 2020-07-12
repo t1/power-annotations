@@ -1,6 +1,6 @@
-package test.indexed;
+package test;
 
-import test.indexed.RepeatableAnnotation.RepeatableAnnotations;
+import test.RepeatableAnnotation.RepeatableAnnotations;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
