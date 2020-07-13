@@ -1,18 +1,19 @@
 package com.github.t1.annotations.index;
 
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 
 import java.lang.annotation.Repeatable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.github.t1.annotations.index.Utils.toDotName;
 import static java.util.Objects.requireNonNull;
 import static org.jboss.jandex.AnnotationValue.Kind.ARRAY;
 import static org.jboss.jandex.AnnotationValue.Kind.NESTED;
 
 public class AnnotationInstance {
     public static AnnotationInstance from(Object value) {
-        return new AnnotationInstance(null, (org.jboss.jandex.AnnotationInstance) value);
+        return new AnnotationInstance(Optional.empty(), (org.jboss.jandex.AnnotationInstance) value);
     }
 
     static boolean isRepeatable(org.jboss.jandex.ClassInfo classInfo) {
@@ -23,7 +24,7 @@ public class AnnotationInstance {
     static Stream<AnnotationInstance> resolveRepeatables(Index index, org.jboss.jandex.AnnotationInstance instance) {
         if (isRepeatable(index, instance))
             return resolveRepeatable(index, instance);
-        return Stream.of(new AnnotationInstance(index, instance));
+        return Stream.of(new AnnotationInstance(Optional.of(index), instance));
     }
 
     private static boolean isRepeatable(Index index, org.jboss.jandex.AnnotationInstance instance) {
@@ -39,65 +40,64 @@ public class AnnotationInstance {
         return false;
     }
 
-    private static final DotName REPEATABLE = DotName.createSimple(Repeatable.class.getName());
+    private static final DotName REPEATABLE = toDotName(Repeatable.class);
 
     private static Stream<AnnotationInstance> resolveRepeatable(Index index, org.jboss.jandex.AnnotationInstance repeatable) {
         return Stream.of((org.jboss.jandex.AnnotationValue[]) repeatable.value().value())
             .map(annotationValue -> resolveAnnotationInstance(annotationValue, repeatable.target()))
-            .map(annotationInstance -> new AnnotationInstance(index, annotationInstance));
+            .map(annotationInstance -> new AnnotationInstance(Optional.of(index), annotationInstance));
     }
 
-    private static org.jboss.jandex.AnnotationInstance resolveAnnotationInstance(org.jboss.jandex.AnnotationValue annotationValue, AnnotationTarget repeatable) {
+    private static org.jboss.jandex.AnnotationInstance resolveAnnotationInstance(org.jboss.jandex.AnnotationValue annotationValue, org.jboss.jandex.AnnotationTarget repeatable) {
         org.jboss.jandex.AnnotationInstance value = (org.jboss.jandex.AnnotationInstance) annotationValue.value();
         if (value.target() == null)
             value = org.jboss.jandex.AnnotationInstance.create(value.name(), repeatable, value.values());
         return value;
     }
 
-    private final Index index;
-    private final org.jboss.jandex.AnnotationInstance delegate;
 
-    private AnnotationInstance(Index index, org.jboss.jandex.AnnotationInstance delegate) {
+    /** The Index is null for meta annotations, i.e. when the annotation instance is on another annotation */
+    private final Optional<Index> index;
+    private final org.jboss.jandex.AnnotationInstance delegate;
+    private final Optional<AnnotationTarget> target;
+
+    private AnnotationInstance(Optional<Index> index, org.jboss.jandex.AnnotationInstance delegate) {
         this.index = index;
         this.delegate = requireNonNull(delegate);
+        this.target = index.map(i -> i.delegateTarget(delegate.target()));
     }
 
-    @Override public String toString() { return delegate.toString(false) + " on " + targetString(); }
-
-
-    private String targetString() {
-        AnnotationTarget target = delegate.target();
-        switch (target.kind()) {
-            case CLASS:
-                return target.asClass().name().toString();
-            case FIELD:
-                return target.asField().declaringClass().name() + "." + target.asField().name();
-            case METHOD:
-                return target.asMethod().declaringClass().name() + "." + target.asMethod().name();
-            default:
-                return target.toString();
-        }
+    private AnnotationInstance(AnnotationInstance instance, AnnotationTarget target) {
+        this.index = instance.index;
+        this.delegate = instance.delegate;
+        this.target = Optional.of(target);
     }
 
+    public AnnotationInstance cloneWithTarget(AnnotationTarget target) {
+        return new AnnotationInstance(this, target);
+    }
 
-    public ClassInfo type() { return new ClassInfo(index(), delegate.name()); }
+    @Override public String toString() { return delegate.toString(false); }
 
-    private Index index() { return requireNonNull(index); }
+
+    public String typeName() { return delegate.name().toString(); }
+
+    public ClassInfo type() { return index().classInfo(delegate.name()); }
+
+    private Index index() { return index.orElseThrow(this::notForMetaAnnotations); }
 
     public AnnotationValue value(String name) {
         org.jboss.jandex.AnnotationValue value = delegate.value(name);
         if (value == null)
-            value = type().method(name)
+            value = type().method(name, new String[0]) // annotation properties don't take args
                 .orElseThrow(() -> new RuntimeException("no value '" + name + "' in " + this))
                 .defaultValue();
         return new AnnotationValue(index, value);
     }
 
-    public String name() {
-        return delegate.name().toString();
-    }
+    public AnnotationTarget target() { return target.orElseThrow(this::notForMetaAnnotations); }
 
-    public ClassInfo targetClass() {
-        return new ClassInfo(index(), delegate.target().asClass());
+    private UnsupportedOperationException notForMetaAnnotations() {
+        return new UnsupportedOperationException("not supported for meta annotations");
     }
 }

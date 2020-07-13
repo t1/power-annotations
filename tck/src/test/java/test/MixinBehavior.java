@@ -2,19 +2,15 @@ package test;
 
 import com.github.t1.annotations.AmbiguousAnnotationResolutionException;
 import com.github.t1.annotations.Annotations;
-import com.github.t1.annotations.MixinFor;
 import com.github.t1.annotations.tck.MixinClasses.AnotherAnnotation;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.SomeClassWithFieldWithVariousAnnotations;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.TargetFieldClassWithTwoMixins;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.TargetFieldClassWithTwoNonRepeatableMixins;
 import com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.TargetFieldClassWithTwoRepeatableMixins;
-import com.github.t1.annotations.tck.MixinClasses.MethodAnnotationMixinClasses.MixinForSomeClassWithMethodWithVariousAnnotations;
 import com.github.t1.annotations.tck.MixinClasses.MethodAnnotationMixinClasses.SomeClassWithMethodWithVariousAnnotations;
 import com.github.t1.annotations.tck.MixinClasses.MethodAnnotationMixinClasses.TargetMethodClassWithTwoMixins;
 import com.github.t1.annotations.tck.MixinClasses.MethodAnnotationMixinClasses.TargetMethodClassWithTwoNonRepeatableMixins;
 import com.github.t1.annotations.tck.MixinClasses.MethodAnnotationMixinClasses.TargetMethodClassWithTwoRepeatableMixins;
-import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.MixinForAnnotation;
-import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.MixinForSomeClassWithVariousAnnotations;
 import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.OriginalAnnotatedTarget;
 import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.SomeAnnotationTargetedByMixin;
 import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.SomeAnnotationWithoutValue;
@@ -25,12 +21,10 @@ import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.Tar
 import com.github.t1.annotations.tck.MixinClasses.TypeAnnotationMixinClasses.TargetClassWithTwoRepeatableMixins;
 import com.github.t1.annotations.tck.RepeatableAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
-import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -58,35 +52,32 @@ public class MixinBehavior {
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("replacing");
+            then(someAnnotation.get().value()).isEqualTo("replacing");
         }
 
-        @Test void shouldGetReplacedRepeatableClassAnnotation() {
-            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
+        @Test void shouldFailToGetRepeatedClassAnnotation() {
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            assert repeatableAnnotation.isPresent();
-            then(repeatableAnnotation.get().value()).isEqualTo(1);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldGetAllClassAnnotations() {
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + AnotherAnnotation.class.getName() + " on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + MixinFor.class.getName() + "(value = " + SomeClassWithVariousAnnotations.class.getName() + ") on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithVariousAnnotations.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithVariousAnnotations.class.getName(),
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithVariousAnnotations.class.getName());
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
+                "@" + AnotherAnnotation.class.getName(),
+                "@" + SomeAnnotationWithoutValue.class.getName(),
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
         @Test void shouldGetAllRepeatableClassAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithVariousAnnotations.class.getName(),
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithVariousAnnotations.class.getName());
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
 
@@ -96,33 +87,42 @@ public class MixinBehavior {
             Optional<SomeAnnotation> someAnnotation = annotationsFromAnnotationTargetedByMixin.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("annotation-mixin");
+            then(someAnnotation.get().value()).isEqualTo("annotation-mixin");
         }
 
-        @Test void shouldGetAllRepeatedMixedInAnnotation() {
+        @Test void shouldGetAllNonRepeatableMixedInAnnotations() {
             Stream<SomeAnnotation> someAnnotation = annotationsFromAnnotationTargetedByMixin.all(SomeAnnotation.class);
 
-            BDDAssertions.then(someAnnotation.map(Object::toString)).containsOnly(
-                "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\") on " + MixinForAnnotation.class.getName());
+            then(someAnnotation.map(Object::toString)).containsOnly(
+                "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\")");
+        }
+
+        @Test void shouldGetAllRepeatableMixedInAnnotations() {
+            Stream<RepeatableAnnotation> repeatableAnnotations = annotationsFromAnnotationTargetedByMixin.all(RepeatableAnnotation.class);
+
+            then(repeatableAnnotations.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
         @Test void shouldGetAllMixedInAnnotation() {
-            List<Annotation> all = annotationsFromAnnotationTargetedByMixin.all();
+            Stream<Annotation> all = annotationsFromAnnotationTargetedByMixin.all();
 
-            then(all.stream().map(Object::toString)).containsOnly(
-                "@" + SomeAnnotationTargetedByMixin.class.getName() + " on " + SomeClassWithAnnotationTargetedByMixin.class.getName(),
-                "@" + MixinFor.class.getName() + "(value = " + SomeAnnotationTargetedByMixin.class.getName() + ") " +
-                    "on " + MixinForAnnotation.class.getName());
+            then(all.map(Object::toString)).containsOnly(
+                "@" + SomeAnnotationTargetedByMixin.class.getName(),
+                "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
 
-        @Test void shouldGetNonMixedInOriginalInsteadOfOtherMixedInAnnotation() {
+        @Test void shouldOverwriteAnnotationWithAnnotationMixedIn() {
             Annotations annotations = Annotations.on(OriginalAnnotatedTarget.class);
 
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("original");
+            then(someAnnotation.get().value()).isEqualTo("annotation-mixin");
         }
 
 
@@ -132,15 +132,16 @@ public class MixinBehavior {
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("one");
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
-        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+        @Test void shouldGetOneOfDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.on(TargetClassWithTwoNonRepeatableMixins.class);
 
-            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+            Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
         @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
@@ -179,61 +180,62 @@ public class MixinBehavior {
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("replacing");
+            then(annotation.get().value()).isEqualTo("replacing");
         }
 
         @Test void shouldFailToGetRepeatableFieldAnnotation() {
-            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            assert repeatableAnnotation.isPresent();
-            then(repeatableAnnotation.get().value()).isEqualTo(1);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldGetAllFieldAnnotations() {
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + AnotherAnnotation.class.getName() + " on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo");
+            then(list.map(Object::toString)).containsOnly(
+                "@" + AnotherAnnotation.class.getName(),
+                "@" + SomeAnnotationWithoutValue.class.getName(),
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
         @Test void shouldGetAllRepeatableFieldAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + com.github.t1.annotations.tck.MixinClasses.FieldAnnotationMixinClasses.MixinForSomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithFieldWithVariousAnnotations.class.getName() + ".foo");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
 
-        @Test void shouldGetClassAnnotationFromMultipleMixins() {
+        @Test void shouldGetOneOfDuplicateFieldAnnotationsFromMultipleMixins() {
             Annotations annotations = Annotations.onField(TargetFieldClassWithTwoMixins.class, "foo");
 
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("one");
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
-        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+        @Test void shouldGetOneRepeatableFieldAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.onField(TargetFieldClassWithTwoNonRepeatableMixins.class, "foo");
 
-            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+            Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
-        @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
+        @Test void shouldFailToGetDuplicateRepeatableFieldAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.onField(TargetFieldClassWithTwoRepeatableMixins.class, "foo");
 
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
             then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
+
+        // TODO test unknown field mixin
     }
 
     @Nested class MethodAnnotations {
@@ -263,60 +265,62 @@ public class MixinBehavior {
             Optional<SomeAnnotation> annotation = annotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("replacing");
+            then(annotation.get().value()).isEqualTo("replacing");
         }
 
         @Test void shouldFailToGetRepeatableMethodAnnotation() {
-            Optional<RepeatableAnnotation> repeatableAnnotation = annotations.get(RepeatableAnnotation.class);
+            Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
-            assert repeatableAnnotation.isPresent();
-            then(repeatableAnnotation.get().value()).isEqualTo(1);
+            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
 
         @Test void shouldGetAllMethodAnnotations() {
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + AnotherAnnotation.class.getName() + " on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotationWithoutValue.class.getName() + " on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotation.class.getName() + "(value = \"to-be-replaced\") on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\") on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo");
+            then(list.map(Object::toString)).containsOnly(
+                "@" + AnotherAnnotation.class.getName(),
+                "@" + SomeAnnotationWithoutValue.class.getName(),
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
         @Test void shouldGetAllRepeatableMethodAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
             then(list.map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + MixinForSomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo",
-                "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeClassWithMethodWithVariousAnnotations.class.getName() + ".foo");
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
 
-        @Test void shouldGetClassAnnotationFromMultipleMixins() {
+        @Test void shouldGetMethodAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.onMethod(TargetMethodClassWithTwoMixins.class, "foo");
 
             Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
             assert someAnnotation.isPresent();
-            BDDAssertions.then(someAnnotation.get().value()).isEqualTo("one");
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
-        @Test void shouldFailToGetDuplicateNonRepeatableClassAnnotationFromMultipleMixins() {
+        @Test void shouldGetOneOfDuplicateNonRepeatableMethodAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.onMethod(TargetMethodClassWithTwoNonRepeatableMixins.class, "foo");
 
-            Throwable throwable = catchThrowable(() -> annotations.get(SomeAnnotation.class));
+            Optional<SomeAnnotation> someAnnotation = annotations.get(SomeAnnotation.class);
 
-            then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
+            assert someAnnotation.isPresent();
+            then(someAnnotation.get().value()).isEqualTo("one");
         }
 
-        @Test void shouldFailToGetDuplicateRepeatableClassAnnotationFromMultipleMixins() {
+        @Test void shouldFailToGetDuplicateRepeatableMethodAnnotationFromMultipleMixins() {
             Annotations annotations = Annotations.onMethod(TargetMethodClassWithTwoRepeatableMixins.class, "foo");
 
             Throwable throwable = catchThrowable(() -> annotations.get(RepeatableAnnotation.class));
 
             then(throwable).isInstanceOf(AmbiguousAnnotationResolutionException.class);
         }
+
+        // TODO constructor mixins
+        // TODO test unknown method mixin (name or args)
     }
 }

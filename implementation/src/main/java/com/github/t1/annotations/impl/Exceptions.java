@@ -1,20 +1,12 @@
 package com.github.t1.annotations.impl;
 
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.joining;
-
 class MethodNotFoundException extends RuntimeException {
-    MethodNotFoundException(String methodName, Class<?>[] argTypes, Class<?> type) {
-        this(methodName, argTypes, type, null);
+    MethodNotFoundException(Class<?> type, String methodName, String[] argTypes) {
+        this(type, methodName, argTypes, null);
     }
 
-    MethodNotFoundException(String methodName, Class<?>[] argTypes, Class<?> type, Throwable cause) {
-        super("no method " + signature(methodName, argTypes) + " in " + type, cause);
-    }
-
-    private static String signature(String methodName, Class<?>... argTypes) {
-        return methodName + Stream.of(argTypes).map(Class::getSimpleName).collect(joining(", ", "(", ")"));
+    MethodNotFoundException(Class<?> type, String methodName, String[] argTypes, Throwable cause) {
+        super("no method " + Utils.signature(methodName, argTypes) + " in " + type, cause);
     }
 }
 

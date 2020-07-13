@@ -28,13 +28,16 @@ public class MixinClasses {
 
 
         @SomeAnnotationTargetedByMixin
+        @RepeatableAnnotation(1)
         public static class SomeClassWithAnnotationTargetedByMixin {}
 
         @Retention(RUNTIME)
+        @RepeatableAnnotation(3)
         public @interface SomeAnnotationTargetedByMixin {}
 
         @MixinFor(SomeAnnotationTargetedByMixin.class)
         @SomeAnnotation("annotation-mixin")
+        @RepeatableAnnotation(2)
         public static class MixinForAnnotation {}
 
 

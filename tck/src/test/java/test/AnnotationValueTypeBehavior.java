@@ -1,7 +1,6 @@
 package test;
 
 import com.github.t1.annotations.Annotations;
-import com.github.t1.annotations.tck.AnnotationValueTypeClasses.DifferentValueTypesAnnotation;
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithAnnotationArrayValueClass;
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithAnnotationValueClass;
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithBooleanArrayValueClass;
@@ -26,8 +25,8 @@ import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithSho
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithShortValueClass;
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithStringArrayValueClass;
 import com.github.t1.annotations.tck.AnnotationValueTypeClasses.AnnotatedWithStringValueClass;
+import com.github.t1.annotations.tck.AnnotationValueTypeClasses.DifferentValueTypesAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
-import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -109,7 +108,7 @@ import static org.assertj.core.api.BDDAssertions.then;
     @Test void shouldGetAnnotationAnnotationValue() {
         DifferentValueTypesAnnotation annotation = getDifferentValueTypesAnnotation(AnnotatedWithAnnotationValueClass.class);
 
-        BDDAssertions.then(annotation.annotationValue().value()).isEqualTo("annotation-value");
+        then(annotation.annotationValue().value()).isEqualTo("annotation-value");
     }
 
 

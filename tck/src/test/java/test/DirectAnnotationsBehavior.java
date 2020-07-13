@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -63,11 +63,11 @@ public class DirectAnnotationsBehavior {
         @Test void shouldGetAllTypeAnnotations() {
             Annotations annotations = Annotations.on(SomeAnnotatedInterface.class);
 
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + SomeAnnotationWithDefaultValue.class.getName() + " on " + SomeAnnotatedInterface.class.getName(),
-                "@" + SomeAnnotation.class.getName() + "(value = \"interface-annotation\") on " + SomeAnnotatedInterface.class.getName());
+            then(list.map(Object::toString)).containsOnly(
+                "@" + SomeAnnotationWithDefaultValue.class.getName(),
+                "@" + SomeAnnotation.class.getName() + "(value = \"interface-annotation\")");
         }
     }
 
@@ -123,14 +123,13 @@ public class DirectAnnotationsBehavior {
         @Test void shouldGetAllMethodAnnotations() throws NoSuchMethodException {
             Annotations annotations = Annotations.onMethod(SomeInterfaceWithAnnotatedMethod.class, "foo", String.class);
 
-            List<Annotation> all = annotations.all();
+            Stream<Annotation> all = annotations.all();
 
             // the parameter annotation must be there, but not represented as method annotation
             then(fooMethod().getParameterAnnotations()[0][0].toString())
                 .startsWith("@" + AnotherAnnotation.class.getName()); // `since` and `forRemoval` are JDK 9+
-            then(all.stream().map(Object::toString)).containsOnly(
-                "@" + SomeAnnotation.class.getName() + "(value = \"method-annotation\") " +
-                    "on " + SomeInterfaceWithAnnotatedMethod.class.getName() + ".foo");
+            then(all.map(Object::toString)).containsOnly(
+                "@" + SomeAnnotation.class.getName() + "(value = \"method-annotation\")");
         }
 
         private Method fooMethod() throws NoSuchMethodException {
@@ -142,7 +141,7 @@ public class DirectAnnotationsBehavior {
 
             then(throwable)
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("no method bar(String) in " + SomeClassWithAnnotatedMethod.class); // implementation detail?
+                .hasMessage("no method bar(java.lang.String) in " + SomeClassWithAnnotatedMethod.class); // implementation detail?
         }
 
         @Test void shouldFailToGetAnnotationsFromMethodWithTooManyArguments() {
@@ -158,7 +157,7 @@ public class DirectAnnotationsBehavior {
 
             then(throwable)
                 .isInstanceOf(RuntimeException.class)
-                .hasMessage("no method foo(String, int) in " + SomeClassWithAnnotatedMethod.class); // implementation detail?
+                .hasMessage("no method foo(java.lang.String, int) in " + SomeClassWithAnnotatedMethod.class); // implementation detail?
         }
 
         @Test void shouldFailToGetAnnotationsFromMethodWithWrongArgumentType() {

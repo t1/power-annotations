@@ -1,6 +1,6 @@
 package test;
 
-import com.github.t1.annotations.impl.AnnotationsLoaderImpl;
+import com.github.t1.annotations.impl.PowerAnnotationsLoader;
 import com.github.t1.annotations.index.Index;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +11,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 
 class FailingLoadBehavior {
     @Test void shouldSilentlySkipUnknownIndexResource() {
-        AnnotationsLoaderImpl loader = new AnnotationsLoaderImpl();
+        PowerAnnotationsLoader loader = new PowerAnnotationsLoader();
 
         then(loader).isNotNull();
     }

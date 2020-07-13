@@ -8,7 +8,6 @@ import com.github.t1.annotations.tck.RepeatableAnnotationClasses.UnrepeatedAnnot
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -38,11 +37,11 @@ public class RepeatableAnnotationBehavior {
     }
 
     @Test void shouldGetAll() {
-        List<Annotation> all = repeatedAnnotations.all();
+        Stream<Annotation> all = repeatedAnnotations.all();
 
-        then(all.stream().map(Object::toString)).containsOnly(
-            "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + RepeatedAnnotationClass.class.getName(),
-            "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + RepeatedAnnotationClass.class.getName());
+        then(all.map(Object::toString)).containsOnly(
+            "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
     }
 
     @Test void shouldGetTypedAll() {

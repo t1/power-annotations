@@ -1,7 +1,23 @@
 package com.github.t1.annotations.tck;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 public class ResolveFromClassClasses {
+
+    @Retention(RUNTIME)
+    public @interface SomeAnnotationWithoutTargetAnnotation {}
+
+    @Retention(RUNTIME)
+    @Target(TYPE)
+    public @interface SomeAnnotationWithOnlyTypeTargetAnnotation {}
+
     @SomeAnnotation("class-annotation")
+    @SomeAnnotationWithoutTargetAnnotation
+    @SomeAnnotationWithOnlyTypeTargetAnnotation
     public static class ClassWithField {
         @SuppressWarnings("unused")
         String someField;
@@ -30,6 +46,8 @@ public class ResolveFromClassClasses {
 
 
     @SomeAnnotation("class-annotation")
+    @SomeAnnotationWithoutTargetAnnotation
+    @SomeAnnotationWithOnlyTypeTargetAnnotation
     public static class ClassWithMethod {
         @SuppressWarnings("unused")
         void someMethod() {}

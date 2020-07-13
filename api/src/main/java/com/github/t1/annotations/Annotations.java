@@ -1,7 +1,6 @@
 package com.github.t1.annotations;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -23,7 +22,7 @@ public interface Annotations {
      * If the annotation type is {@link java.lang.annotation.Repeatable}, the same type
      * can show up several times, eventually with different properties.
      */
-    List<Annotation> all();
+    Stream<Annotation> all();
 
     /**
      * Get the 'strongest' {@link Annotation} instance of this type.

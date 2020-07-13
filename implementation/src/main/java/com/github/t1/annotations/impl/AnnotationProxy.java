@@ -8,7 +8,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static com.github.t1.annotations.impl.Utils.enumValue;
 import static com.github.t1.annotations.index.ClassInfo.toClass;
@@ -20,20 +19,20 @@ import static com.github.t1.annotations.index.ClassInfo.toClass;
 class AnnotationProxy {
     static Annotation proxy(AnnotationInstance annotationInstance) {
         return new AnnotationProxy(
-            annotationInstance::name,
-            annotationInstance::toString,
+            annotationInstance.typeName(),
+            annotationInstance.toString(),
             name -> annotationInstance.value(name).value())
             .build();
     }
 
-    private final Supplier<String> typeName;
-    private final Supplier<String> toString;
+    private final String typeName;
+    private final String toString;
     private final Function<String, Object> property;
 
-    private AnnotationProxy(Supplier<String> typeName, Supplier<String> toString, Function<String, Object> property) {
-        this.property = property;
-        this.toString = toString;
+    private AnnotationProxy(String typeName, String toString, Function<String, Object> property) {
         this.typeName = typeName;
+        this.toString = toString;
+        this.property = property;
     }
 
     private Annotation build() {
@@ -42,7 +41,7 @@ class AnnotationProxy {
     }
 
     private Class<?> getAnnotationType() {
-        return loadClass(typeName.get());
+        return loadClass(typeName);
     }
 
     private static Class<?> loadClass(String typeName) {
@@ -61,16 +60,16 @@ class AnnotationProxy {
     Object invoke(Object proxy, Method method, Object... args) {
         String name = method.getName();
         if (method.getParameterCount() == 1 && "equals".equals(name))
-            return toString.get().equals(args[0].toString());
+            return toString.equals(args[0].toString());
         // no other methods on annotations can have arguments (except for one `wait`)
         assert method.getParameterCount() == 0;
         assert args == null || args.length == 0;
         if ("hashCode".equals(name))
-            return toString.get().hashCode();
+            return toString.hashCode();
         if ("annotationType".equals(name))
             return getAnnotationType();
         if ("toString".equals(name))
-            return toString.get();
+            return toString;
 
         Object value = property.apply(name);
 

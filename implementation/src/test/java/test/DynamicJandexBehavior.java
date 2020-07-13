@@ -5,7 +5,6 @@ import com.github.t1.annotations.Annotations;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -29,12 +28,12 @@ public class DynamicJandexBehavior {
     }
 
     @Test void shouldGetAllClassAnnotations() {
-        List<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
+        Stream<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
-        then(annotations.stream().map(Objects::toString)).containsOnly(
-            "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\") on " + SomeReflectionClass.class.getName(),
-            "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + SomeReflectionClass.class.getName(),
-            "@" + RepeatableAnnotation.class.getName() + "(value = 2) on " + SomeReflectionClass.class.getName());
+        then(annotations.map(Objects::toString)).containsOnly(
+            "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\")",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
     }
 
     @Test void shouldGetSingleFieldAnnotation() {
@@ -72,7 +71,7 @@ public class DynamicJandexBehavior {
         Throwable throwable = catchThrowable(() -> Annotations.onMethod(SomeReflectionClass.class, "unknown", String.class));
 
         then(throwable).isInstanceOf(RuntimeException.class)
-            .hasMessage("no method unknown(String) in " + SomeReflectionClass.class);
+            .hasMessage("no method unknown(java.lang.String) in " + SomeReflectionClass.class);
     }
 
     @Test void shouldFailToGetRepeatedAnnotation() {

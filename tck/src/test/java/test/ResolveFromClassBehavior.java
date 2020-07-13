@@ -10,13 +10,13 @@ import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatable
 import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatableAnnotationOnClassAndMethod;
 import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatedAnnotationsForField;
 import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatedAnnotationsForMethod;
+import com.github.t1.annotations.tck.ResolveFromClassClasses.SomeAnnotationWithOnlyTypeTargetAnnotation;
+import com.github.t1.annotations.tck.ResolveFromClassClasses.SomeAnnotationWithoutTargetAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
-import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -30,14 +30,26 @@ public class ResolveFromClassBehavior {
             Optional<SomeAnnotation> annotation = classWithFieldAnnotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("class-annotation");
+            then(annotation.get().value()).isEqualTo("class-annotation");
+        }
+
+        @Test void shouldNotGetFieldAnnotationWithoutTargetAnnotationFromClass() {
+            Optional<SomeAnnotationWithoutTargetAnnotation> annotation = classWithFieldAnnotations.get(SomeAnnotationWithoutTargetAnnotation.class);
+
+            then(annotation).isEmpty();
+        }
+
+        @Test void shouldNotGetFieldAnnotationWithOnlyTypeTargetAnnotationFromClass() {
+            Optional<SomeAnnotationWithOnlyTypeTargetAnnotation> annotation = classWithFieldAnnotations.get(SomeAnnotationWithOnlyTypeTargetAnnotation.class);
+
+            then(annotation).isEmpty();
         }
 
         @Test void shouldNotGetAllFieldAnnotationFromClass() {
             Optional<SomeAnnotation> annotation = classWithFieldAnnotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("class-annotation");
+            then(annotation.get().value()).isEqualTo("class-annotation");
         }
 
         @Test void shouldGetRepeatableFieldAnnotationFromClass() {
@@ -59,10 +71,11 @@ public class ResolveFromClassBehavior {
         @Test void shouldOnlyGetAllFieldAnnotationAndNotFromClass() {
             Annotations annotations = Annotations.onField(ClassWithAnnotationsOnClassAndField.class, "someField");
 
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + ClassWithAnnotationsOnClassAndField.class.getName() + ".someField");
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + SomeAnnotation.class.getName() + "(value = \"class-annotation\")");
         }
     }
 
@@ -73,14 +86,26 @@ public class ResolveFromClassBehavior {
             Optional<SomeAnnotation> annotation = classWithMethodAnnotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("class-annotation");
+            then(annotation.get().value()).isEqualTo("class-annotation");
+        }
+
+        @Test void shouldNotGetMethodAnnotationWithoutTargetAnnotationFromClass() {
+            Optional<SomeAnnotationWithoutTargetAnnotation> annotation = classWithMethodAnnotations.get(SomeAnnotationWithoutTargetAnnotation.class);
+
+            then(annotation).isEmpty();
+        }
+
+        @Test void shouldNotGetMethodAnnotationWithOnlyTypeTargetAnnotationFromClass() {
+            Optional<SomeAnnotationWithOnlyTypeTargetAnnotation> annotation = classWithMethodAnnotations.get(SomeAnnotationWithOnlyTypeTargetAnnotation.class);
+
+            then(annotation).isEmpty();
         }
 
         @Test void shouldNotGetAllMethodAnnotationFromClass() {
             Optional<SomeAnnotation> annotation = classWithMethodAnnotations.get(SomeAnnotation.class);
 
             assert annotation.isPresent();
-            BDDAssertions.then(annotation.get().value()).isEqualTo("class-annotation");
+            then(annotation.get().value()).isEqualTo("class-annotation");
         }
 
         @Test void shouldGetRepeatableMethodAnnotationFromClass() {
@@ -99,13 +124,14 @@ public class ResolveFromClassBehavior {
             then(annotation.map(RepeatableAnnotation::value)).containsExactly(1, 2);
         }
 
-        @Test void shouldOnlyGetAllMethodAnnotationAndNotFromClass() {
+        @Test void shouldGetAllMethodAndClassAnnotations() {
             Annotations annotations = Annotations.onMethod(ClassWithAnnotationsOnClassAndMethod.class, "someMethod");
 
-            List<Annotation> list = annotations.all();
+            Stream<Annotation> list = annotations.all();
 
-            then(list.stream().map(Object::toString)).containsOnly(
-                "@" + RepeatableAnnotation.class.getName() + "(value = 1) on " + ClassWithAnnotationsOnClassAndMethod.class.getName() + ".someMethod");
+            then(list.map(Object::toString)).containsOnly(
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + SomeAnnotation.class.getName() + "(value = \"class-annotation\")");
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.github.t1.annotations.index;
 
-import org.jboss.jandex.IndexReader;
+import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
 
 import java.io.IOException;
@@ -12,60 +12,25 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.logging.Level.FINE;
-import static java.util.stream.Collectors.joining;
 
 class Indexer {
-    private static final Logger LOG = Logger.getLogger(Indexer.class.getName());
-    private static final Level LEVEL = FINE;
-
-    private static void log(String message) {
-        LOG.log(LEVEL, message);
-    }
-
-    static IndexView loadFromIndexFile() {
-        try (InputStream inputStream = getClassLoader().getResourceAsStream("META-INF/jandex.idx")) {
-            IndexView indexView = (inputStream == null) ? new Indexer().build() : loadFrom(inputStream);
-            if (LOG.isLoggable(LEVEL)) {
-                log("------------------------------------------------------------");
-                indexView.getKnownClasses().forEach(classInfo ->
-                    log(classInfo.name() + " :: " + classInfo.classAnnotations().stream()
-                        .filter(instance -> !instance.name().toString().equals("kotlin.Metadata")) // contains binary
-                        .map(Object::toString).collect(joining(", ")))
-                );
-                log("------------------------------------------------------------");
-            }
-            return indexView;
-        } catch (RuntimeException | IOException e) {
-            throw new RuntimeException("can't read index file", e);
-        }
-    }
-
-    private static ClassLoader getClassLoader() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        return (classLoader == null) ? ClassLoader.getSystemClassLoader() : classLoader;
-    }
-
-    static IndexView loadFrom(InputStream inputStream) {
-        try {
-            return new IndexReader(inputStream).read();
-        } catch (RuntimeException | IOException e) {
-            throw new RuntimeException("can't read Jandex input stream", e);
-        }
-    }
-
     private final org.jboss.jandex.Indexer indexer = new org.jboss.jandex.Indexer();
+    private int archivesIndexed;
+    private int classesIndexed;
 
-    IndexView build() {
+    IndexView scanClassPath() {
+        long t0 = System.currentTimeMillis();
         urls().distinct().forEach(this::index);
-        return indexer.complete();
+        Index index = indexer.complete();
+        LOG.info("scanned " + archivesIndexed + " archives with " + classesIndexed + " classes " +
+            "in " + (System.currentTimeMillis() - t0) + "ms");
+        return index;
     }
 
     private Stream<URL> urls() {
@@ -91,17 +56,21 @@ class Indexer {
 
     private void index(URL url) {
         try {
-            log("index " + url);
+            long t0 = System.currentTimeMillis();
+            int classesIndexedBefore = classesIndexed;
             if (url.toString().endsWith(".jar") || url.toString().endsWith(".war"))
-                indexZip(url.openStream());
+                indexArchive(url.openStream());
             else
                 indexFolder(url);
+            LOG.info("indexed " + (classesIndexed - classesIndexedBefore) + " classes in " + url
+                + " in " + (System.currentTimeMillis() - t0) + " ms");
         } catch (IOException e) {
             throw new RuntimeException("can't index " + url, e);
         }
     }
 
-    private void indexZip(InputStream inputStream) throws IOException {
+    private void indexArchive(InputStream inputStream) throws IOException {
+        archivesIndexed++;
         ZipInputStream zipInputStream = new ZipInputStream(inputStream, UTF_8);
         while (true) {
             ZipEntry entry = zipInputStream.getNextEntry();
@@ -114,10 +83,11 @@ class Indexer {
 
     private void indexFile(String fileName, InputStream inputStream) throws IOException {
         if (fileName.endsWith(".class")) {
+            classesIndexed++;
             indexer.index(inputStream);
         } else if (fileName.endsWith(".war")) {
             // necessary because of the Thorntail arquillian adapter
-            indexZip(inputStream);
+            indexArchive(inputStream);
         }
     }
 
@@ -143,4 +113,6 @@ class Indexer {
             throw new RuntimeException("can't index path " + path, e);
         }
     }
+
+    private static final Logger LOG = Logger.getLogger(Indexer.class.getName());
 }

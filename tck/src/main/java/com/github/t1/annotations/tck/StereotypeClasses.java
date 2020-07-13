@@ -3,15 +3,22 @@ package com.github.t1.annotations.tck;
 import com.github.t1.annotations.Stereotype;
 
 import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class StereotypeClasses {
+    @Retention(RUNTIME)
+    @Target(ANNOTATION_TYPE)
+    public @interface SomeMetaAnnotation {}
+
     @Stereotype
     @Retention(RUNTIME)
-    @SomeAnnotation("stereotype")
+    @SomeAnnotation("some-stereotype")
     @RepeatableAnnotation(1)
     @RepeatableAnnotation(2)
+    @SomeMetaAnnotation
     public @interface SomeStereotype {}
 
     @Stereotype
@@ -49,6 +56,7 @@ public class StereotypeClasses {
         @SomeStereotype
         @RepeatableAnnotation(7)
         String foo() { return "foo"; }
+
         String bar() { return "bar"; }
     }
 }
