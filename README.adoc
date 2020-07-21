@@ -2,13 +2,26 @@
 
 Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features described below. This works also for fields and methods; simply use `Annotations.onField` or `Annotations.onMethod`.
 
-== Implemented Features
+== Features
 
 === Jandex
 
-If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. Java reflection will only be used as a fallback if a class is not in the index.
+If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection, slowing down startup time.
 
-This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection.
+
+=== Stereotypes
+
+Just like https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes], but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class, but as that would exclude CDI, any annotation named `Stereotype` will work.
+
+The simplest use-case for Stereotypes is aliasing, i.e. using one annotation instead of another, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations). And it gets more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B. Properly used, stereotypes are shortcuts describing the role the annotated element has; functionally as well as a documentation.
+
+
+=== Resolve From Class
+
+Annotations on a class are considered as a fallback for members (i.e. fields or methods), if
+
+* the member is not annotated with the same type or the annotation is repeatable, and
+* the annotation is annotated to be an _explicitly_ allowed `@Target` for `FIELD`/`METHOD`.
 
 
 === Mixins
@@ -28,22 +41,4 @@ public class PersistenceIdMixin {}
 
 Voila! MP GraphQL would work as if all JPA `@Id` annotations where it's own.
 
-
-=== Stereotypes
-
-Just like https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes], but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class, but as that would exclude CDI, any annotation with that name will work.
-
-The simplest use-case for Stereotypes is aliasing, i.e. using one annotation instead of another, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations). And it gets more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B.
-
-
-=== Resolve From Class
-
-Annotations on a class are considered as a fallback for members (i.e. fields or methods), if
-
-* the member is not annotated with the same type or the annotation is repeatable, and
-* the annotation is annotated to be an _explicitly_ allowed `@Target` for `FIELD`/`METHOD`.
-
-
-*Feedback required*:
-
-1. should this only happen with an explicit annotation, e.g. `@FallbackToClass`.
+NOTE: Mixins are a very powerful kind of magic: use them with caution and only when strictly necessary. Otherwise, the readers of your code will have a hard time to find out why something behaves as if an annotation was there, but it's clearly not.
