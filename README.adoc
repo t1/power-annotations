@@ -11,14 +11,26 @@ If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotati
 
 === Stereotypes
 
-Just like https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes], but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class, but as that would exclude CDI, any annotation named `Stereotype` will work.
+The simplest use-case for Stereotypes is renaming annotations, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations).
 
-The simplest use-case for Stereotypes is aliasing, i.e. using one annotation instead of another, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations). And it gets more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B. Properly used, stereotypes are shortcuts describing the role the annotated element has; functionally as well as a documentation.
+[source,java]
+----
+@Retention(RUNTIME)
+@Stereotype
+@JsonbProperty
+public @interface Property {}
+----
+
+It gets much more interesting, when you add more annotations from other (supporting) frameworks to your stereotype, e.g. `@XmlAttribute` from JAX-B. Now you have one annotation instead of two with both having the same semantics.
+
+Properly used, stereotypes are shortcuts describing the role the annotated element has; functionally as well as a documentation.
+
+This is exactly what https://jakarta.ee/specifications/cdi/2.0/cdi-spec-2.0.html#stereotypes[CDI-Stereotypes] do, but not restricted to CDI, i.e. the annotations used by any framework that supports Power Annotations can be used with stereotypes. We have our own `Stereotype` class; but as we don't want to depend on CDI and still not exclude CDI, any annotation named `Stereotype` will work.
 
 
 === Resolve From Class
 
-Annotations on a class are considered as a fallback for members (i.e. fields or methods), if
+This is a very common pattern: annotations on a class are considered as a fallback for member annotations (i.e. on fields or methods), if
 
 * the member is not annotated with the same type or the annotation is repeatable, and
 * the annotation is annotated to be an _explicitly_ allowed `@Target` for `FIELD`/`METHOD`.
@@ -26,9 +38,7 @@ Annotations on a class are considered as a fallback for members (i.e. fields or 
 
 === Mixins
 
-Say you have a class that you want to but can't add annotations to; maybe it's a class from some library or even from the JDK.
-Then you can create your own class (or interface) and annotate it as `@MixinFor` the target class.
-The annotations you put on your mixin class will work as if they where on the target class.
+Say you have a class you want to add annotations to, but you can't; e.g., because it's a class from some library or even from the JDK. You can create your own class (or interface) and annotate it as `@MixinFor` the target class. The annotations you put on your mixin class will work as if they were on the target class (if your framework supports Power Annotations).
 
 This also works for annotations: say we're developing an application packed with annotations from JPA, which doesn't support mixins (yet). The application also uses a library that supports mixins but doesn't know about JPA, e.g. a future MP GraphQL. We want all JPA `@Id` annotations to be recognized as synonyms for GraphQL `@Id` annotations. We could create a simple mixin for the JPA annotation:
 
@@ -39,6 +49,6 @@ This also works for annotations: say we're developing an application packed with
 public class PersistenceIdMixin {}
 ----
 
-Voila! MP GraphQL would work as if all JPA `@Id` annotations where it's own.
+Voila! MP GraphQL would work as if all JPA `@Id` annotations were it's own.
 
-NOTE: Mixins are a very powerful kind of magic: use them with caution and only when strictly necessary. Otherwise, the readers of your code will have a hard time to find out why something behaves as if an annotation was there, but it's clearly not.
+NOTE: Mixins are a very powerful kind of magic: use them with caution and only when strictly necessary. Otherwise, the readers of your code will have a hard time to find out why something behaves as if an annotation was there, but it's clearly not. If you can, use Stereotypes instead.
