@@ -21,7 +21,7 @@ public class MethodInfo extends AnnotationTarget {
         this.delegate = requireNonNull(delegate);
     }
 
-    @Override public String toString() { return signature(delegate); }
+    @Override public String toString() { return delegate.declaringClass().name() + "." + signature(delegate); }
 
 
     @Override public ElementType elementType() { return METHOD; }

@@ -60,11 +60,9 @@ public class PowerAnnotationsLoader extends AnnotationsLoader {
         }
 
         @Override public <T extends Annotation> Optional<T> get(Class<T> type) {
-            return annotationTarget.annotations()
-                .filter(instance -> instance.typeName().equals(type.getName()))
-                .map(AnnotationProxy::proxy)
-                .map(type::cast)
-                .collect(toOptionalOrThrow(list -> new PowerAnnotationsAmbiguousAnnotationResolutionException(type)));
+            return all(type)
+                .collect(toOptionalOrThrow(list ->
+                    new PowerAnnotationsAmbiguousAnnotationResolutionException(type, annotationTarget, list)));
         }
 
         @Override public <T extends Annotation> Stream<T> all(Class<T> type) {
