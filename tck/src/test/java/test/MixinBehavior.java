@@ -64,7 +64,7 @@ public class MixinBehavior {
         @Test void shouldGetAllClassAnnotations() {
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + SomeAnnotation.class.getName() + "(value = \"replacing\")",
                 "@" + AnotherAnnotation.class.getName(),
@@ -75,7 +75,7 @@ public class MixinBehavior {
         @Test void shouldGetAllRepeatableClassAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
@@ -93,14 +93,14 @@ public class MixinBehavior {
         @Test void shouldGetAllNonRepeatableMixedInAnnotations() {
             Stream<SomeAnnotation> someAnnotation = annotationsFromAnnotationTargetedByMixin.all(SomeAnnotation.class);
 
-            then(someAnnotation.map(Object::toString)).containsOnly(
+            then(someAnnotation.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\")");
         }
 
         @Test void shouldGetAllRepeatableMixedInAnnotations() {
             Stream<RepeatableAnnotation> repeatableAnnotations = annotationsFromAnnotationTargetedByMixin.all(RepeatableAnnotation.class);
 
-            then(repeatableAnnotations.map(Object::toString)).containsOnly(
+            then(repeatableAnnotations.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
@@ -108,7 +108,7 @@ public class MixinBehavior {
         @Test void shouldGetAllMixedInAnnotation() {
             Stream<Annotation> all = annotationsFromAnnotationTargetedByMixin.all();
 
-            then(all.map(Object::toString)).containsOnly(
+            then(all.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + SomeAnnotationTargetedByMixin.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"annotation-mixin\")",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
@@ -192,7 +192,7 @@ public class MixinBehavior {
         @Test void shouldGetAllFieldAnnotations() {
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + AnotherAnnotation.class.getName(),
                 "@" + SomeAnnotationWithoutValue.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
@@ -203,7 +203,7 @@ public class MixinBehavior {
         @Test void shouldGetAllRepeatableFieldAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
@@ -277,7 +277,7 @@ public class MixinBehavior {
         @Test void shouldGetAllMethodAnnotations() {
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + AnotherAnnotation.class.getName(),
                 "@" + SomeAnnotationWithoutValue.class.getName(),
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
@@ -288,7 +288,7 @@ public class MixinBehavior {
         @Test void shouldGetAllRepeatableMethodAnnotations() {
             Stream<RepeatableAnnotation> list = annotations.all(RepeatableAnnotation.class);
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }

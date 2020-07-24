@@ -30,7 +30,7 @@ public class DynamicJandexBehavior {
     @Test void shouldGetAllClassAnnotations() {
         Stream<Annotation> annotations = Annotations.on(SomeReflectionClass.class).all();
 
-        then(annotations.map(Objects::toString)).containsOnly(
+        then(annotations.map(Objects::toString)).containsExactlyInAnyOrder(
             "@" + SomeAnnotation.class.getName() + "(value = \"some-reflection-class\")",
             "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
@@ -90,6 +90,6 @@ public class DynamicJandexBehavior {
 
         Stream<RepeatableAnnotation> someAnnotations = annotations.all(RepeatableAnnotation.class);
 
-        then(someAnnotations.map(RepeatableAnnotation::value)).containsOnly(1, 2);
+        then(someAnnotations.map(RepeatableAnnotation::value)).containsExactlyInAnyOrder(1, 2);
     }
 }

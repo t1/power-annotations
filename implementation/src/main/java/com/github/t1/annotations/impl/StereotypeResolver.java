@@ -26,11 +26,7 @@ class StereotypeResolver implements AnnotationResolver {
     private boolean isStereotypeType(ClassInfo classInfo) {
         return classInfo.annotations()
             .map(AnnotationInstance::typeName)
-            .anyMatch(this::isStereotype);
-    }
-
-    private boolean isStereotype(String typeName) {
-        return typeName.endsWith(".Stereotype");
+            .anyMatch(StereotypeResolver::isStereotype);
     }
 
     private void resolve(ClassInfo stereotypeType) {
@@ -40,15 +36,19 @@ class StereotypeResolver implements AnnotationResolver {
 
     private void resolve(ClassInfo stereotypeType, AnnotationTarget target) {
         stereotypeType.annotations()
-            .filter(this::canBeAdded)
-            .filter(annotationInstance -> target.canBeAdded(annotationInstance.type()))
+            .filter(StereotypeResolver::shouldBeResolved)
+            .filter(target::canBeAdded)
             // .peek(instance -> System.out.println("add " + instance + " to " + target))
             .forEach(target::add);
     }
 
-    private boolean canBeAdded(AnnotationInstance annotation) {
+    private static boolean shouldBeResolved(AnnotationInstance annotation) {
         return !isStereotype(annotation.typeName())
             && !DO_NON_RESOLVE.contains(annotation.typeName());
+    }
+
+    private static boolean isStereotype(String typeName) {
+        return typeName.endsWith(".Stereotype");
     }
 
     private static final List<String> DO_NON_RESOLVE = Stream.of(

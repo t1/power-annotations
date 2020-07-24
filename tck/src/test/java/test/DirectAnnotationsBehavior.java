@@ -65,7 +65,7 @@ public class DirectAnnotationsBehavior {
 
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + SomeAnnotationWithDefaultValue.class.getName(),
                 "@" + SomeAnnotation.class.getName() + "(value = \"interface-annotation\")");
         }
@@ -128,7 +128,7 @@ public class DirectAnnotationsBehavior {
             // the parameter annotation must be there, but not represented as method annotation
             then(fooMethod().getParameterAnnotations()[0][0].toString())
                 .startsWith("@" + AnotherAnnotation.class.getName()); // `since` and `forRemoval` are JDK 9+
-            then(all.map(Object::toString)).containsOnly(
+            then(all.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + SomeAnnotation.class.getName() + "(value = \"method-annotation\")");
         }
 

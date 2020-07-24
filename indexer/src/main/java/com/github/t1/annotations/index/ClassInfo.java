@@ -1,21 +1,27 @@
 package com.github.t1.annotations.index;
 
 import org.jboss.jandex.ClassType;
-import org.jboss.jandex.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import static com.github.t1.annotations.index.MethodInfo.signature;
+import static com.github.t1.annotations.index.Utils.streamOfNullable;
+import static com.github.t1.annotations.index.Utils.toArray;
 import static com.github.t1.annotations.index.Utils.toDotName;
+import static com.github.t1.annotations.index.Utils.toTreeMap;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 
 public class ClassInfo extends AnnotationTarget {
     public static Class<?> toClass(Object value) {
@@ -33,7 +39,7 @@ public class ClassInfo extends AnnotationTarget {
 
     private final org.jboss.jandex.ClassInfo delegate;
     private final Map<String, FieldInfo> fields = new TreeMap<>();
-    private final Map<String, MethodInfo> methods = new TreeMap<>();
+    private Map<String, MethodInfo> methods;
 
     ClassInfo(Index index, org.jboss.jandex.ClassInfo delegate) {
         super(index);
@@ -54,11 +60,9 @@ public class ClassInfo extends AnnotationTarget {
     @Override public int hashCode() { return delegate.name().hashCode(); }
 
 
-    @Override public ElementType elementType() { return TYPE; }
+    @Override public ElementType elementType() { return isAnnotationType() ? ANNOTATION_TYPE : TYPE; }
 
     @Override public String name() { return delegate.name().toString(); }
-
-    public String simpleName() { return delegate.simpleName(); }
 
     @Override protected Stream<org.jboss.jandex.AnnotationInstance> rawAnnotations() {
         return delegate.classAnnotations().stream();
@@ -68,38 +72,67 @@ public class ClassInfo extends AnnotationTarget {
         return implementsInterface(Annotation.class.getName());
     }
 
+    public Stream<ClassInfo> typeTree() {
+        return thisAndSuperClasses().flatMap(this::thisAndSuperInterfaces);
+    }
+
+    private Stream<ClassInfo> thisAndSuperInterfaces(ClassInfo classInfo) {
+        return Stream.concat(Stream.of(classInfo), classInfo.superInterfaces());
+    }
+
+    private Stream<ClassInfo> superInterfaces() {
+        return delegate.interfaceNames().stream().map(index::classInfo).flatMap(this::thisAndSuperInterfaces);
+    }
+
+    private Stream<ClassInfo> thisAndSuperClasses() {
+        // Java 9+: return Stream.iterate(this, ClassInfo::hasSuperClass, ClassInfo::superClass);
+        Builder<ClassInfo> builder = Stream.builder();
+        for (ClassInfo classInfo = this; classInfo.hasSuperClass(); classInfo = classInfo.superClass())
+            builder.accept(classInfo);
+        return builder.build();
+    }
+
+    public boolean hasSuperClass() {
+        return delegate.superClassType() != null;
+    }
+
+    public ClassInfo superClass() {
+        return index.classInfo(delegate.superName());
+    }
+
     public boolean implementsInterface(String typeName) {
         return delegate.interfaceNames().contains(toDotName(typeName));
     }
 
     public boolean isImplicitlyAllowedOn(ElementType elementType) {
-        return isAllowedOn(elementType, true);
+        return isAllowedOn(elementType).orElse(true);
     }
 
     public boolean isExplicitlyAllowedOn(ElementType elementType) {
-        return isAllowedOn(elementType, false);
+        return isAllowedOn(elementType).orElse(false);
     }
 
-    private boolean isAllowedOn(ElementType elementType, boolean defaultValue) {
-        String targetTypeName = elementType.name();
-        return annotations(Target.class.getName())
-            .findAny()
-            .map(targetAnnotation -> {
-                // TODO resolve jandex AnnotationValues in our own AnnotationValue
-                org.jboss.jandex.AnnotationValue[] allowedTargets = (org.jboss.jandex.AnnotationValue[])
-                    targetAnnotation.value("value").value();
-                return Stream.of(allowedTargets)
-                    .map(org.jboss.jandex.AnnotationValue::value)
-                    .anyMatch(targetTypeName::equals);
-            }).orElse(defaultValue);
+    private Optional<Boolean> isAllowedOn(ElementType targetElementType) {
+        // would like to `assert isAnnotationType()`, but `this` may not be in the index
+        Set<String> allowed = new HashSet<>();
+        allowed.add(targetElementType.name());
+        if (targetElementType == ANNOTATION_TYPE)
+            allowed.add(TYPE.name());
+        return annotations(Target.class.getName()).findAny()
+            .map(annotationInstance -> annotationValues(annotationInstance).anyMatch(allowed::contains));
+    }
+
+    private Stream<String> annotationValues(AnnotationInstance annotationInstance) {
+        return annotationInstance.value("value").annotationValues()
+            .map(annotationValue -> annotationValue.value(String.class));
     }
 
     public Stream<FieldInfo> fields() {
-        return delegate.fields().stream().map(this::fieldInfo);
+        return typeTree().flatMap(c -> c.delegate.fields().stream()).map(this::fieldInfo);
     }
 
     public Optional<FieldInfo> field(String fieldName) {
-        return Optional.ofNullable(delegate.field(fieldName)).map(this::fieldInfo);
+        return typeTree().flatMap(c -> streamOfNullable(c.delegate.field(fieldName))).map(this::fieldInfo).findFirst();
     }
 
     private FieldInfo fieldInfo(org.jboss.jandex.FieldInfo fieldInfo) {
@@ -107,34 +140,31 @@ public class ClassInfo extends AnnotationTarget {
     }
 
     public Stream<MethodInfo> methods() {
-        return delegate.methods().stream().map(this::methodInfo);
+        return getMethods().values().stream();
+    }
+
+    private Map<String, MethodInfo> getMethods() {
+        if (methods == null) {
+            methods = typeTree()
+                .flatMap(c -> c.delegate.methods().stream())
+                .map(methodInfo -> new MethodInfo(this, methodInfo))
+                .filter(MethodInfo::isNotConstructor)
+                .distinct()
+                .collect(toTreeMap(MethodInfo::signature, identity()));
+        }
+        return methods;
     }
 
     public Optional<MethodInfo> method(String methodName, Class<?>... argTypes) {
-        return method(methodName, Stream.of(argTypes).map(Class::getName).collect(Utils.toArray(String.class)));
+        return method(methodName, Stream.of(argTypes).map(Class::getName).collect(toArray(String.class)));
     }
 
     public Optional<MethodInfo> method(String methodName, String... argTypeNames) {
-        return delegate.methods().stream()
-            .filter(methodInfo -> methodInfo.name().equals(methodName))
-            .filter(methodInfo -> methodInfo.parameters().size() == argTypeNames.length)
-            .filter(methodInfo -> matchTypes(methodInfo.parameters(), argTypeNames))
-            .findFirst()
-            .map(this::methodInfo);
+        return Optional.ofNullable(getMethods().get(signature(methodName, argTypeNames)));
     }
 
-    private static boolean matchTypes(List<Type> parameters, String[] argTypeNames) {
-        for (int i = 0; i < parameters.size(); i++) {
-            Type paramType = parameters.get(i);
-            String argTypeName = argTypeNames[i];
-            if (!paramType.name().toString().equals(argTypeName))
-                return false;
-        }
-        return true;
-    }
-
-    private MethodInfo methodInfo(org.jboss.jandex.MethodInfo methodInfo) {
-        return methods.computeIfAbsent(signature(methodInfo), s -> new MethodInfo(index, methodInfo));
+    public Stream<MethodInfo> findMethod(String signature) {
+        return streamOfNullable(getMethods().get(signature));
     }
 
     public boolean isRepeatableAnnotation() {

@@ -3,6 +3,7 @@ package com.github.t1.annotations.index;
 import org.jboss.jandex.DotName;
 
 import java.lang.annotation.Repeatable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -79,6 +80,18 @@ public class AnnotationInstance {
 
     @Override public String toString() { return delegate.toString(false); }
 
+    @Override public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        AnnotationInstance that = (AnnotationInstance) o;
+        return delegate.equals(that.delegate);
+    }
+
+    @Override public int hashCode() {
+        return Objects.hash(delegate);
+    }
 
     public String typeName() { return delegate.name().toString(); }
 
@@ -89,10 +102,14 @@ public class AnnotationInstance {
     public AnnotationValue value(String name) {
         org.jboss.jandex.AnnotationValue value = delegate.value(name);
         if (value == null)
-            value = type().method(name, new String[0]) // annotation properties don't take args
-                .orElseThrow(() -> new RuntimeException("no value '" + name + "' in " + this))
-                .defaultValue();
+            value = defaultValue(name);
         return new AnnotationValue(index, value);
+    }
+
+    private org.jboss.jandex.AnnotationValue defaultValue(String name) {
+        return type().method(name, new String[0]) // annotation properties don't take args
+            .orElseThrow(() -> new RuntimeException("no value '" + name + "' in " + this))
+            .defaultValue();
     }
 
     public AnnotationTarget target() { return target.orElseThrow(this::notForMetaAnnotations); }

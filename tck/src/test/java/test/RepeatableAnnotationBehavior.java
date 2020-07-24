@@ -39,7 +39,7 @@ public class RepeatableAnnotationBehavior {
     @Test void shouldGetAll() {
         Stream<Annotation> all = repeatedAnnotations.all();
 
-        then(all.map(Object::toString)).containsOnly(
+        then(all.map(Object::toString)).containsExactlyInAnyOrder(
             "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
     }
@@ -47,6 +47,6 @@ public class RepeatableAnnotationBehavior {
     @Test void shouldGetTypedAll() {
         Stream<RepeatableAnnotation> all = repeatedAnnotations.all(RepeatableAnnotation.class);
 
-        then(all.map(RepeatableAnnotation::value)).containsOnly(1, 2);
+        then(all.map(RepeatableAnnotation::value)).containsExactlyInAnyOrder(1, 2);
     }
 }

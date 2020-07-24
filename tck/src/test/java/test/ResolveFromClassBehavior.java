@@ -73,7 +73,7 @@ public class ResolveFromClassBehavior {
 
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + SomeAnnotation.class.getName() + "(value = \"class-annotation\")");
         }
@@ -129,7 +129,7 @@ public class ResolveFromClassBehavior {
 
             Stream<Annotation> list = annotations.all();
 
-            then(list.map(Object::toString)).containsOnly(
+            then(list.map(Object::toString)).containsExactlyInAnyOrder(
                 "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
                 "@" + SomeAnnotation.class.getName() + "(value = \"class-annotation\")");
         }
