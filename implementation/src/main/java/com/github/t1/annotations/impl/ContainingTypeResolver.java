@@ -7,10 +7,10 @@ import com.github.t1.annotations.index.Index;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 
-class TypeToMemberResolver {
+class ContainingTypeResolver {
     private final Index index;
 
-    public TypeToMemberResolver(Index index) { this.index = index; }
+    public ContainingTypeResolver(Index index) { this.index = index; }
 
     public void resolve() {
         index.allClasses()

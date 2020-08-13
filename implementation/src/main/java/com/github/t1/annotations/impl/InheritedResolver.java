@@ -9,10 +9,10 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-public class InheritedAnnotationsResolver {
+public class InheritedResolver {
     private final Index index;
 
-    public InheritedAnnotationsResolver(Index index) { this.index = index; }
+    public InheritedResolver(Index index) { this.index = index; }
 
     public void resolve() {
         index.allClasses().forEach(this::resolveFromSuperTypes);

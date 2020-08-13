@@ -2,16 +2,16 @@ package test;
 
 import com.github.t1.annotations.Annotations;
 import com.github.t1.annotations.tck.RepeatableAnnotation;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithAnnotationsOnClassAndField;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithAnnotationsOnClassAndMethod;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithField;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithMethod;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatableAnnotationOnClassAndField;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatableAnnotationOnClassAndMethod;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatedAnnotationsForField;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.ClassWithRepeatedAnnotationsForMethod;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.SomeAnnotationWithOnlyTypeTargetAnnotation;
-import com.github.t1.annotations.tck.ResolveFromClassClasses.SomeAnnotationWithoutTargetAnnotation;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithAnnotationsOnClassAndField;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithAnnotationsOnClassAndMethod;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithField;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithMethod;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithRepeatableAnnotationOnClassAndField;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithRepeatableAnnotationOnClassAndMethod;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithRepeatedAnnotationsForField;
+import com.github.t1.annotations.tck.ContainingTypeClasses.ClassWithRepeatedAnnotationsForMethod;
+import com.github.t1.annotations.tck.ContainingTypeClasses.SomeAnnotationWithOnlyTypeTargetAnnotation;
+import com.github.t1.annotations.tck.ContainingTypeClasses.SomeAnnotationWithoutTargetAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
-public class ResolveFromClassBehavior {
+public class ContainingTypeBehavior {
     @Nested class FieldAnnotations {
         Annotations classWithFieldAnnotations = Annotations.onField(ClassWithField.class, "someField");
 
