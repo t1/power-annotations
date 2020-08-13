@@ -1,8 +1,8 @@
 package test;
 
 import com.github.t1.annotations.Annotations;
-import com.github.t1.annotations.tck.InheritedAnnotationClass.InheritingClass;
-import com.github.t1.annotations.tck.InheritedAnnotationClass.InheritingInterface;
+import com.github.t1.annotations.tck.InheritedAnnotationClasses.InheritingClass;
+import com.github.t1.annotations.tck.InheritedAnnotationClasses.InheritingInterface;
 import com.github.t1.annotations.tck.RepeatableAnnotation;
 import com.github.t1.annotations.tck.SomeAnnotation;
 import org.junit.jupiter.api.Test;
@@ -33,12 +33,12 @@ public class InheritedBehavior {
         Stream<Annotation> all = annotations.all();
 
         then(all.map(Object::toString)).containsExactlyInAnyOrder(
-            "@" + SomeAnnotation.class.getName() + "(value = \"7\")",
+            "@" + SomeAnnotation.class.getName() + "(value = \"10\")",
             "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 6)",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 7)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 8)",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 9)");
+            "@" + RepeatableAnnotation.class.getName() + "(value = 9)",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 10)");
     }
 
     @Test void shouldGetAllOnClass() {
@@ -81,8 +81,8 @@ public class InheritedBehavior {
             "@" + RepeatableAnnotation.class.getName() + "(value = 3)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 5)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 6)",
-            "@" + RepeatableAnnotation.class.getName() + "(value = 7)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 8)",
+            "@" + RepeatableAnnotation.class.getName() + "(value = 10)",
             "@" + RepeatableAnnotation.class.getName() + "(value = 9)");
     }
 }

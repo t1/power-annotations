@@ -1,6 +1,6 @@
 package com.github.t1.annotations.tck;
 
-public class InheritedAnnotationClass {
+public class InheritedAnnotationClasses {
 
     @SomeAnnotation("1")
     @RepeatableAnnotation(1)
@@ -27,7 +27,7 @@ public class InheritedAnnotationClass {
     public interface Base extends SuperBase {
         @SomeAnnotation("7")
         @RepeatableAnnotation(7)
-        String method();
+        @Override String method();
     }
 
     @SomeAnnotation("8")
@@ -38,5 +38,8 @@ public class InheritedAnnotationClass {
     @SomeAnnotation("9")
     @RepeatableAnnotation(9)
     public interface SuperBase {
+        @SomeAnnotation("10")
+        @RepeatableAnnotation(10)
+        default String method() { return null; }
     }
 }

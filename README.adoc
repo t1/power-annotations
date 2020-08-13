@@ -11,6 +11,13 @@ Fields and methods don't have to be declared directly on the target class or int
 If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection, slowing down startup time.
 
 
+=== Inheritance
+
+When annotating a super class or interface, the annotation is valid also for the sub class or interface. This is also true for annotations on overridden or implemented methods.
+
+In Java reflection, this only works for super classes and only if the annotation is annotated as `@Inherited`. As this generally violates the https://en.wikipedia.org/wiki/Liskov_substitution_principle[LSP], power-annotations always resolves these annotations. We may add a mechanism to _not_ inherit annotations later, if the need actually arises.
+
+
 === Stereotypes
 
 The simplest use-case for Stereotypes is renaming annotations, e.g. `@Property` instead of `@JsonbProperty` (assuming your JBON-B implementation supported Power Annotations).

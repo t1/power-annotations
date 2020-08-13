@@ -28,8 +28,8 @@ public class PowerAnnotationsLoader extends AnnotationsLoader {
     }
 
     private void resolve() {
-        new InheritedAnnotationsLoader(index).resolve();
-        new ResolveFromClassLoader(index).resolve();
+        new InheritedAnnotationsResolver(index).resolve();
+        new TypeToMemberResolver(index).resolve();
         new StereotypeResolver(index).resolve();
         new MixinResolver(index).resolve();
     }
