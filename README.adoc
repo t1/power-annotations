@@ -8,7 +8,9 @@ Fields and methods don't have to be declared directly on the target class or int
 
 === Jandex
 
-If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there. This is purely optional, i.e. if there is no Jandex file, Power-Annotations will fall back to use JDK reflection, slowing down startup time.
+If there is a https://github.com/wildfly/jandex[Jandex] index file, all annotations will be read from there.
+
+A Jandex file is advisable but optional, i.e. if there is no Jandex file, Power-Annotations will fall back to scan the classpath with JDK reflection, slowing down startup time. As this also means that a lot of classes from all dependencies have to be scanned, this can have a severe performance impact. If you want to stay dynamic but exclude some dependencies, you can do so by adding a file `META-INF/jandex.properties` with a property `exclude` containing a space-delimited list of `artifactId:groupId`. See `implementation/src/main/resources/META-INF/jandex.properties`.
 
 
 === Inheritance

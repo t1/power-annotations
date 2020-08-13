@@ -21,12 +21,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 class Indexer {
     private final org.jboss.jandex.Indexer indexer = new org.jboss.jandex.Indexer();
+    private final IndexerConfig config = new IndexerConfig();
     private int archivesIndexed;
     private int classesIndexed;
 
     IndexView scanClassPath() {
         long t0 = System.currentTimeMillis();
-        urls().distinct().forEach(this::index);
+        urls()
+            .distinct()
+            .filter(this::include)
+            .forEach(this::index);
         Index index = indexer.complete();
         LOG.info("scanned " + archivesIndexed + " archives with " + classesIndexed + " classes " +
             "in " + (System.currentTimeMillis() - t0) + "ms");
@@ -52,6 +56,11 @@ class Indexer {
         } catch (MalformedURLException e) {
             throw new RuntimeException("invalid classpath url " + url, e);
         }
+    }
+
+    private boolean include(URL url) {
+        String urlString = url.toString();
+        return config.excludes().noneMatch(urlString::matches);
     }
 
     private void index(URL url) {
