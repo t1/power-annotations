@@ -13,14 +13,23 @@ public class CombinedAnnotationClasses {
     public @interface SomeStereotype {}
 
     @SomeStereotype
-    public interface SomeInterface {
+    public interface SomeStereotypedInterface {
         @SuppressWarnings("unused")
-        String foo();
+        void foo();
     }
 
     @SomeStereotype
-    public static class SomeClass {
+    public static class SomeStereotypedClass {
         @SuppressWarnings("unused")
-        public String foo() { return null; }
+        public void foo() {}
+    }
+
+    @SomeAnnotation("from-sub-interface")
+    public interface SomeInheritingInterface extends SomeInheritedInterface {
+    }
+
+    public interface SomeInheritedInterface {
+        @SuppressWarnings("unused")
+        void foo();
     }
 }
