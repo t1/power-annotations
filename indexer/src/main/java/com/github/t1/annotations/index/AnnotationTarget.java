@@ -52,16 +52,16 @@ public abstract class AnnotationTarget {
         return annotations(typeName).findAny().isPresent();
     }
 
-    public void add(AnnotationInstance instance) {
-        assert canBeAdded(instance);
-        getAnnotations().add(instance.cloneWithTarget(this));
-    }
-
     public void replace(AnnotationInstance instance) {
         ClassInfo annotationType = instance.type();
         assert annotationType.isImplicitlyAllowedOn(elementType());
         if (!annotationType.isRepeatableAnnotation())
             getAnnotations().removeIf(annotation -> annotation.type().equals(annotationType));
+        add(instance);
+    }
+
+    public void add(AnnotationInstance instance) {
+        assert canBeAdded(instance);
         getAnnotations().add(instance.cloneWithTarget(this));
     }
 

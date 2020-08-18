@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class StereotypeClasses {
     @Retention(RUNTIME)
-    @Target(ANNOTATION_TYPE)
+    @Target(ANNOTATION_TYPE) // i.e. not on TYPE
     public @interface SomeMetaAnnotation {}
 
     @Stereotype
@@ -28,6 +28,21 @@ public class StereotypeClasses {
     @RepeatableAnnotation(4)
     public @interface AnotherStereotype {}
 
+    @Stereotype
+    @Retention(RUNTIME)
+    @SomeStereotype
+    public @interface SomeIndirectedStereotype {}
+
+    @Stereotype
+    @Retention(RUNTIME)
+    @SomeStereotype
+    public @interface SomeTardyIndirectedStereotype {}
+
+    @Stereotype
+    @Retention(RUNTIME)
+    @SomeIndirectedStereotype
+    public @interface SomeDoubleIndirectedStereotype {}
+
 
     @SomeStereotype
     @RepeatableAnnotation(5)
@@ -36,6 +51,15 @@ public class StereotypeClasses {
     @SomeStereotype
     @SomeAnnotation("on-class")
     public static class StereotypedClassWithSomeAnnotation {}
+
+    @SomeIndirectedStereotype
+    public static class IndirectlyStereotypedClass {}
+
+    @SomeTardyIndirectedStereotype
+    public static class TardyIndirectlyStereotypedClass {}
+
+    @SomeDoubleIndirectedStereotype
+    public static class DoubleIndirectlyStereotypedClass {}
 
     @SomeStereotype
     @AnotherStereotype

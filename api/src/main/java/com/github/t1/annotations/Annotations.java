@@ -42,8 +42,8 @@ public interface Annotations {
      *     <li>mixin</li>
      *     <li>target</li>
      *     <li>target stereotypes</li>
-     *     <li>containing class (TODO not yet implemented)</li>
-     *     <li>containing class stereotypes (TODO not yet implemented)</li>
+     *     <li>containing class</li>
+     *     <li>containing class stereotypes</li>
      *     <li>containing package (TODO not yet implemented)</li>
      *     <li>containing package stereotypes (TODO not yet implemented)</li>
      * </ol>

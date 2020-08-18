@@ -6,10 +6,16 @@ import com.github.t1.annotations.tck.SomeAnnotation;
 import com.github.t1.annotations.tck.StereotypeClasses.AnotherStereotype;
 import com.github.t1.annotations.tck.StereotypeClasses.ClassWithStereotypedField;
 import com.github.t1.annotations.tck.StereotypeClasses.ClassWithStereotypedMethod;
+import com.github.t1.annotations.tck.StereotypeClasses.DoubleIndirectlyStereotypedClass;
 import com.github.t1.annotations.tck.StereotypeClasses.DoubleStereotypedClass;
+import com.github.t1.annotations.tck.StereotypeClasses.IndirectlyStereotypedClass;
+import com.github.t1.annotations.tck.StereotypeClasses.SomeDoubleIndirectedStereotype;
+import com.github.t1.annotations.tck.StereotypeClasses.SomeIndirectedStereotype;
 import com.github.t1.annotations.tck.StereotypeClasses.SomeStereotype;
+import com.github.t1.annotations.tck.StereotypeClasses.SomeTardyIndirectedStereotype;
 import com.github.t1.annotations.tck.StereotypeClasses.StereotypedClass;
 import com.github.t1.annotations.tck.StereotypeClasses.StereotypedClassWithSomeAnnotation;
+import com.github.t1.annotations.tck.StereotypeClasses.TardyIndirectlyStereotypedClass;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +67,45 @@ public class StereotypeBehavior {
                 "@" + RepeatableAnnotation.class.getName() + "(value = 2)");
         }
 
-        // TODO test indirect stereotypes
+        @Test void shouldGetAllFromIndirectClassStereotype() {
+            Annotations annotations = Annotations.on(IndirectlyStereotypedClass.class);
+
+            Stream<Annotation> all = annotations.all();
+
+            then(all.map(Objects::toString)).containsExactlyInAnyOrder(
+                "@" + SomeAnnotation.class.getName() + "(value = \"some-stereotype\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
+                "@" + SomeStereotype.class.getName(),
+                "@" + SomeIndirectedStereotype.class.getName());
+        }
+
+        @Test void shouldGetAllFromIndirectClassStereotypeResolvedAlphabeticallyAfterSomeStereotype() {
+            Annotations annotations = Annotations.on(TardyIndirectlyStereotypedClass.class);
+
+            Stream<Annotation> all = annotations.all();
+
+            then(all.map(Objects::toString)).containsExactlyInAnyOrder(
+                "@" + SomeAnnotation.class.getName() + "(value = \"some-stereotype\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
+                "@" + SomeStereotype.class.getName(),
+                "@" + SomeTardyIndirectedStereotype.class.getName());
+        }
+
+        @Test void shouldGetAllFromDoubleIndirectClassStereotype() {
+            Annotations annotations = Annotations.on(DoubleIndirectlyStereotypedClass.class);
+
+            Stream<Annotation> all = annotations.all();
+
+            then(all.map(Objects::toString)).containsExactlyInAnyOrder(
+                "@" + SomeAnnotation.class.getName() + "(value = \"some-stereotype\")",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 1)",
+                "@" + RepeatableAnnotation.class.getName() + "(value = 2)",
+                "@" + SomeStereotype.class.getName(),
+                "@" + SomeIndirectedStereotype.class.getName(),
+                "@" + SomeDoubleIndirectedStereotype.class.getName());
+        }
 
         @Test void shouldGetClassAnnotationAmbiguousWithStereotype() {
             Annotations annotations = Annotations.on(StereotypedClassWithSomeAnnotation.class);
