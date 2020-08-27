@@ -1,5 +1,8 @@
 = Power-Annotations
 
+CAUTION: This project is archived. The code moved to https://github.com/smallrye/smallrye-common[SmallRye-Common].
+
+
 Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features described below. This works also for fields and methods; simply use `Annotations.onField` or `Annotations.onMethod`.
 
 Fields and methods don't have to be declared directly on the target class or interface, but can be inherited from some super class or interface. All annotations work as if the field was on the sub type.
