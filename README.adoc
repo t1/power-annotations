@@ -1,4 +1,4 @@
-= Power-Annotations
+= *!!!ARCHIVED!!!* Power-Annotations
 
 CAUTION: This project is archived. The code moved to https://github.com/smallrye/smallrye-common[SmallRye-Common].
 
