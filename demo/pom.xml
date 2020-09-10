@@ -23,7 +23,7 @@
 
         <assertj.version>3.16.1</assertj.version>
         <smallrye-graphql.version>1.0.4</smallrye-graphql.version>
-        <resteasy-client.version>4.5.5.Final</resteasy-client.version>
+        <resteasy-client.version>4.5.6.Final</resteasy-client.version>
     </properties>
 
     <dependencyManagement>
