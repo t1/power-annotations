@@ -18,7 +18,7 @@
 
         <surefire-plugin.version>2.22.2</surefire-plugin.version>
 
-        <quarkus.version>1.8.0.Final</quarkus.version>
+        <quarkus.version>1.8.1.Final</quarkus.version>
         <power-annotations.version>1.0-SNAPSHOT</power-annotations.version>
 
         <assertj.version>3.17.2</assertj.version>
