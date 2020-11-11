@@ -21,7 +21,7 @@
         <quarkus.version>1.9.2.Final</quarkus.version>
         <power-annotations.version>1.0-SNAPSHOT</power-annotations.version>
 
-        <assertj.version>3.18.0</assertj.version>
+        <assertj.version>3.18.1</assertj.version>
         <smallrye-graphql.version>1.0.14</smallrye-graphql.version>
         <resteasy-client.version>4.5.6.Final</resteasy-client.version>
     </properties>
