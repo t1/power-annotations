@@ -1,0 +1,4 @@
+"Query root"
+type Query {
+  hello: String
+}

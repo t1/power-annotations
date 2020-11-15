@@ -11,11 +11,14 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>power-annotations</module>
         <module>api</module>
-        <module>indexer</module>
         <module>implementation</module>
+        <module>indexer</module>
         <module>tck</module>
-        <module>demo</module>
+        <module>plugin</module>
+        <module>common</module>
+        <module>demos</module>
     </modules>
 
     <properties>
