@@ -22,7 +22,7 @@
         <power-annotations.version>1.0-SNAPSHOT</power-annotations.version>
 
         <assertj.version>3.18.1</assertj.version>
-        <smallrye-graphql.version>1.0.15</smallrye-graphql.version>
+        <smallrye-graphql.version>1.0.16</smallrye-graphql.version>
         <resteasy-client.version>4.5.8.Final</resteasy-client.version>
     </properties>
 
