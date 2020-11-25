@@ -35,7 +35,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
             </plugin>
-            <!--TODO we need a mechanism to start the App
+            <!--TODO mechanism to start the App for the ITs: Arquillian, TestContainers, etc.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -50,9 +50,9 @@
                 </executions>
             </plugin>-->
             <plugin>
-                <groupId>com.github.t1</groupId>
+                <groupId>io.smallrye</groupId>
                 <artifactId>power-jandex-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0.17-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
