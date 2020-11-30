@@ -52,7 +52,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>power-jandex-maven-plugin</artifactId>
-                <version>1.0.17-SNAPSHOT</version>
+                <version>1.0.18</version>
                 <executions>
                     <execution>
                         <goals>
