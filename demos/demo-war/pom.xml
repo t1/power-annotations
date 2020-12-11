@@ -13,7 +13,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 
-        <smallrye-graphql.version>1.0.16</smallrye-graphql.version>
+        <smallrye-graphql.version>1.0.20</smallrye-graphql.version>
     </properties>
 
     <build>
