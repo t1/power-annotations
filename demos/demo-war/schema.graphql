@@ -1,4 +1,10 @@
+type AnnotationsResponse {
+  id: String
+  mixedInValue: String
+  stereotypedValue: String
+}
+
 "Query root"
 type Query {
-  hello: String
+  hello: AnnotationsResponse
 }
