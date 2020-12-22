@@ -1,4 +1,6 @@
-= Power-Annotations
+= Power-Annotations !!! ARCHIVED !!!
+
+NOTE: This project has moved to https://github.com/smallrye/smallrye-graphql/tree/master/power-annotations[MP GraphQL]
 
 Instead of `SuperHero.class.getAnnotation(Entity.class)`, use `Annotations.on(SuperHero.class).get(Entity.class)` and you'll get some very powerful features described below. This works also for fields and methods; simply use `Annotations.onField` or `Annotations.onMethod`.
 
